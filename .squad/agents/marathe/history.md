@@ -842,3 +842,23 @@ permissions:
 - Configure GitHub Environments (dev/uat/prod) with Azure secrets
 - Team begins feature development on `squad/*` branches targeting `dev`
 - Schedule decisions review post-MVP (30 days) to validate branching strategy
+
+## Cross-Agent Context (2026-03-17) — Project Plan Published
+
+**From:** Squad Scribe  
+**Event:** Hal completed 4-phase project breakdown with 44 concrete tasks
+
+**Project Plan:** `docs/PROJECT-PLAN.md` now live with full task assignments
+
+**Your Task Load (Phase 0–1):** 4 Phase 0 + support in Phase 1  
+- **P0 (4 tasks):** Monorepo workspace setup (root package.json, workspaces), Docker Compose (Postgres + Redis local dev), GitHub Actions CI scaffold, automated version bumping
+- **P1:** Light support role (env management, deployment coordination, monitoring setup)
+
+**Critical Path:** Docker Compose (P0-5) unblocks Pemulis's persistence work. CI scaffold (P0-7) gates Steeply's test automation.
+
+**Key Dependencies:**
+- Team ready to develop after your monorepo setup (P0-1) completes
+- Database availability (P0-5) enables mid-Phase 1 persistence work
+- CI workflows (P0-7) before Steeply runs coverage gates
+
+**Read:** `docs/PROJECT-PLAN.md` for full task breakdown, sizing, and dependencies.

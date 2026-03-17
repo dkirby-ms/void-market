@@ -30,6 +30,35 @@ Repo directory preserved as `galaxy-wars` for git/CI stability. See `.squad/orch
 
 ---
 
+### 2026-03-17: Project Phasing & Task Breakdown (Hal)
+**Status:** Approved  
+**Owner:** Hal (Lead)
+**Artifact:** `docs/PROJECT-PLAN.md`
+
+**Phase Structure:**
+- **Phase 0:** 9 scaffolding tasks (~1 week) — Monorepo, build, CI, Docker, test infra
+- **Phase 1:** 35 trading-loop tasks (~4 weeks) — Galaxy gen, navigation, trading, turns, ships, persistence, basic auth, PixiJS, HUD
+- **Phases 2–4:** Feature-level scope — Combat, Alliances, Endgame. Decomposed when Phase 1 ships.
+
+**Key Decisions:**
+1. Phase 0 exists (scaffolding before gameplay)
+2. Persistence in Phase 1 (not Phase 0) — depends on game schemas
+3. Auth is minimal (JWT, no OAuth until Phase 2+)
+4. Server and client tracks run in parallel (after shared schemas)
+5. Critical path: Shared schemas → GalaxyRoom (server) & Galaxy renderer (client) → Database (persistence)
+
+**Team Load:**
+- Pemulis: 14 server tasks (critical path)
+- Gately: 9 client tasks (blocked on schemas)
+- Steeply: 7 test tasks
+- Marathe: 4 Phase 0 + support
+- Mario: 3 UX tasks (parallel)
+- Joelle: 2 doc tasks
+
+**Related:** `.squad/orchestration-log/2026-03-17T01-00-00Z-hal.md`
+
+---
+
 ### 2026-03-16: Void Market Architecture Decisions (Hal)
 **Status:** Approved  
 **Context:** Initial architecture design

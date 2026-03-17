@@ -396,3 +396,23 @@ Finishing agent should convert .todo() stubs to executable tests using Pemulis/G
 - Establish test coverage targets for trading loop MVP
 - Coordinate with Gately on PixiJS rendering testability and canvas mocking strategies
 
+
+## Cross-Agent Context (2026-03-17) — Project Plan Published
+
+**From:** Squad Scribe  
+**Event:** Hal completed 4-phase project breakdown with 44 concrete tasks
+
+**Project Plan:** `docs/PROJECT-PLAN.md` now live with full task assignments
+
+**Your Task Load (Phase 0–1):** 7 test tasks  
+- **P0 (1 task):** Jest/Vitest scaffold with coverage config
+- **P1 (6 tasks):** Unit tests (schemas, room logic, economy), integration tests (trading, persistence), client canvas mocking, E2E trading scenarios
+
+**Test-First Approach:** Tests follow implementation (no mandate for TDD), but required before Phase 1 exit. Canvas rendering mocking (Gately) and Colyseus state sync (Pemulis) are key blockers.
+
+**Key Dependencies:**
+- Pemulis stability before you test server logic
+- Gately's canvas architecture before you mock PixiJS
+- Marathe's CI/CD in place (P0-7) before you set coverage gates
+
+**Read:** `docs/PROJECT-PLAN.md` for full task breakdown, sizing, and dependencies.

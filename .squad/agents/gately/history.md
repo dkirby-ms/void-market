@@ -940,3 +940,23 @@ Risk renderer rendering phase can now adopt this pattern for armies/territories.
 - Colyseus state sync testing with movement commands (from Hal's architecture)
 - Coordinate with team on Colyseus version and schema patterns
 
+
+## Cross-Agent Context (2026-03-17) — Project Plan Published
+
+**From:** Squad Scribe  
+**Event:** Hal completed 4-phase project breakdown with 44 concrete tasks
+
+**Project Plan:** `docs/PROJECT-PLAN.md` now live with full task assignments
+
+**Your Task Load (Phase 0–1):** 9 client tasks  
+- **P0 (2 tasks):** Vite client scaffold, PixiJS v8 demo setup
+- **P1 (7 tasks):** Galaxy map renderer (critical path), HUD overlay, sector/planet views, responsive layout, WebSocket sync, player UI, action feedback
+
+**Critical Path:** Galaxy map renderer (P1-15) unblocks all other client features. You block on Pemulis's schema definitions before meaningful rendering.
+
+**Key Dependencies:**
+- Pemulis schemas (P1-1/2/3) needed before your rendering work
+- Mario's UX brief (`docs/UX-BRIEF.md`) available for screen inventory and design guidance
+- Steeply coordinates on canvas testing and PixiJS mocking
+
+**Read:** `docs/PROJECT-PLAN.md` for full task breakdown, sizing, and dependencies.
