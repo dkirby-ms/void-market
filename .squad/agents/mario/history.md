@@ -228,3 +228,183 @@
 - Your responsive grid informs Gately's canvas + DOM layout sync
 
 **Read:** `docs/PROJECT-PLAN.md` for full task breakdown. Your UX brief is already live; focus on Phase 1 screen refinements and mobile testing.
+
+### 2026-03-17: Figma Make Readiness Evaluation of UX Brief
+
+**Context:** Evaluated `docs/UX-BRIEF.md` for suitability as a Figma Make AI prompt input.
+
+**What IS ready for Figma Make:**
+- Color palette with hex values (12 colors defined with roles)
+- Basic typography scale (4 sizes, font family, weight for labels)
+- Screen inventory (7 screens with purpose, content lists, user actions)
+- Breakpoints (375px, 768px, 1024px thresholds mentioned)
+- Canvas vs DOM architecture split (clear what's rendered where)
+- Status color system (green/amber/red with hex values)
+
+**What is NOT ready — critical gaps for Figma Make:**
+1. **No spatial layout specs** — No panel widths, sidebar widths, header heights, card dimensions, icon sizes. "Top-right corner" isn't a layout spec.
+2. **No component library** — Buttons, cards, badges, inputs, dropdowns, toasts, modals not defined. No states (hover, active, disabled, focus, loading) with visual treatments.
+3. **No spacing/grid system** — No padding scale, margin values, gap sizes, grid columns, gutter widths.
+4. **No border/radius/shadow specs** — Glass-morphism mentioned but no `border-radius`, `box-shadow`, or `backdrop-blur` values in this doc (they exist in design-system.md but aren't referenced here).
+5. **No element state definitions** — Hover colors, disabled opacity, focus rings, active transforms not specified.
+6. **No screen wireframes or spatial descriptions** — Content lists exist but no positional layout ("sidebar is 320px on the right, main content fills remaining space").
+7. **No icon set/style** — Icons mentioned functionally but no icon family, sizes, or stroke weight specified.
+8. **No animation specs** — Pulse, flash, chime mentioned but no duration, easing, or keyframe definitions.
+9. **No font stack** — "Roboto or system monospace" is too vague; needs definitive choice + fallbacks.
+10. **Incomplete player colors** — Only 3 player colors defined; game supports many more players.
+
+**Verdict:** The brief is a strong *strategy document* but not a *design spec*. Figma Make needs pixel-level precision. The brief would produce inconsistent, interpretive results if fed directly. It needs a companion "Design Spec" layer with concrete values.
+
+**Recommended additions for Figma Make readiness:**
+- Component sheet: button (primary/secondary/ghost/disabled), card, badge, input, dropdown, toast, modal — each with all states and exact colors/sizes
+- Layout grid: 12-col, gutter sizes, container max-widths per breakpoint
+- Spacing scale: 4/8/12/16/24/32/48px with usage rules
+- Per-screen wireframe descriptions: element positions, dimensions, z-order
+- Border-radius scale (4/8/12/16px), shadow scale (sm/md/lg with values)
+- Definitive font stack with line-heights and letter-spacing
+- Icon specs: family (e.g., Lucide), sizes (16/20/24px), stroke weight
+
+## 2026-03-17: Design System Reference Extracted from Figma Export
+
+**Context:** Figma Make export provided at `/tmp/void-market-figma/` containing complete React/Tailwind/Radix/shadcn-ui prototype with 6 game screens, component library, and design tokens.
+
+**Deliverable:** `docs/DESIGN-SYSTEM.md` — comprehensive, framework-agnostic design system reference (21 sections, 29KB).
+
+**What Was Extracted:**
+
+1. **Color System**
+   - Complete OKLCH color palette with hex fallbacks
+   - Dark theme tokens (primary): zinc-950 background, white text, violet-500 accents
+   - Light theme tokens (reference only, not used in game)
+   - Semantic colors: green (success), amber (warning), red (danger), violet (primary)
+   - Resource colors: amber (credits), blue (minerals), violet (energy)
+   - Player/territory colors: red, blue, green, zinc (neutral)
+   - Chart colors: 5 data visualization colors
+   - Sidebar-specific theme tokens
+
+2. **Typography**
+   - Font stack: system-ui (no web fonts, performance-first)
+   - 6-tier size scale (12px to 24px)
+   - 4 weights (400, 500, 600, 700)
+   - Monospace for numeric data (resource values, coordinates)
+   - Line height: consistent 1.5
+
+3. **Spacing System**
+   - Tailwind base scale (2px to 64px)
+   - Common patterns: p-4 (component), p-6 (card), gap-2/4/6
+   - Screen padding: p-6 (24px)
+
+4. **Border Radius**
+   - Base radius: 10px
+   - 4 sizes: sm (6px), md (8px), lg (10px), xl (12px)
+   - Component mapping: buttons (md), cards (xl), inputs (md)
+
+5. **Component Inventory**
+   - **48 shadcn/ui primitives**: Button, Card, Badge, Input, Select, Dialog, Dropdown, Tabs, Progress, etc.
+   - **10 game screens**: GameLayout, HUD, Sidebar, AllianceChat, GalaxyMap, SectorView, PlanetView, FleetView, TradingView, AllianceView
+   - Full state matrix: default, hover, focus, active, disabled, invalid
+
+6. **Layout Architecture**
+   - Fixed HUD (64px height)
+   - Collapsible sidebar (256px → 64px on mobile)
+   - Flexible chat panel (320px, bottom sheet on mobile)
+   - Z-index layering: HUD/modals (z-50), sidebars (z-10), content (z-0)
+   - Responsive breakpoints: sm (640px), md (768px), lg (1024px)
+   - Mobile-first: 375px baseline, stacks vertically, icon-only sidebar
+
+7. **Iconography**
+   - Lucide React v0.487.0 (stroke-based)
+   - 30+ icons cataloged with usage context
+   - Sizes: 12px, 16px, 20px (default), 24px, 32px, 48px
+   - Stroke weight: 2px (Lucide default)
+
+8. **Effects & Motion**
+   - Glass-morphism: zinc-900/80 + backdrop-blur-sm + zinc-700 border
+   - Transition default: 200ms ease-in-out
+   - Focus ring: 3px ring with 50% opacity
+   - Progress bars: color-coded (green >50%, amber >30%, red <30%)
+
+9. **Canvas Rendering (PixiJS)**
+   - Galaxy map colors: zinc-950 background, white stars (30% opacity), violet-500 warp routes (20% opacity)
+   - Sector colors: zinc-700 (neutral), player colors with 20% glow
+   - Hover states: violet-400 stroke, 2px, scale up
+   - Planet markers: 3px dots, amber-500 (homeworld), zinc-500 (others)
+   - Fleet triangles: violet-400
+
+10. **Accessibility**
+    - WCAG AA contrast ratios: all text meets 4.5:1 minimum
+    - Keyboard navigation: Tab, Enter, Escape, Arrow keys
+    - Screen reader: semantic HTML, aria-labels, live regions
+    - Color independence: status colors paired with text/icons
+
+11. **Form Elements**
+    - Input: h-9 (36px), px-3, rounded-md, zinc-800 background, violet-500 focus ring
+    - Select: same as Input + chevron-down icon
+    - Checkbox/Radio: 16px, primary color checked
+    - Switch: 44×24px, 20px thumb
+
+12. **Button Variants**
+    - 6 variants: default, destructive, outline, secondary, ghost, link
+    - 4 sizes: default (36px), sm (32px), lg (40px), icon (36×36px)
+    - Hover: darkens 10% (`/90`)
+
+13. **Data Visualization**
+    - Progress bars: 6-8px height, rounded-full, color-coded
+    - Resource bars: amber/blue/violet fills
+    - Status dots: 8px circles, green/amber/red/zinc
+    - Badges: rounded-md, px-2 py-0.5, text-xs
+
+**Key Design Decisions:**
+- **Dark-first strategy**: Entire game uses dark theme; light theme exists but not implemented in screens
+- **Glass-morphism aesthetic**: HUD, sidebar, chat, tooltips use semi-transparent backgrounds with backdrop blur
+- **Hybrid Canvas/DOM**: PixiJS for galaxy map (spatial, animated), DOM for forms/text (accessible, semantic)
+- **Color semantics**: Violet is primary accent (not blue), resource colors are distinct and consistent
+- **Mobile responsiveness**: Sidebar collapses to icons, chat becomes bottom sheet, resources hide on narrow screens
+- **No custom fonts**: System font stack for fast loading, no FOUT/FOIT issues
+- **Monospace data**: All numeric values (resources, coordinates, counts) use monospace for alignment and scannability
+
+**Learnings (Design Patterns):**
+1. **OKLCH color space**: Provides perceptual uniformity; colors look consistent across lightness levels
+2. **Tailwind CSS 4 theming**: Uses CSS variables + `@theme inline` for dynamic theming without JS
+3. **Radix UI primitives**: Provide accessible, keyboard-navigable components out of the box
+4. **shadcn/ui conventions**: Copy-paste components with `variant` and `size` props for consistency
+5. **Glass-morphism implementation**: `backdrop-blur-sm` + semi-transparent backgrounds + subtle borders create depth without heavy shadows
+6. **Progress bar color coding**: Dynamically changes color based on percentage (green/amber/red) to provide instant visual feedback
+7. **Responsive grid stacking**: `grid-cols-1 md:grid-cols-2 lg:grid-cols-3` pattern for mobile-first, progressive enhancement
+8. **Icon sizing discipline**: Consistent 4px increments (12/16/20/24/32/48) prevent visual inconsistency
+9. **Touch target minimums**: All buttons ≥36px height, mobile touch targets ≥44px for WCAG 2.1 compliance
+10. **Canvas/DOM separation**: PixiJS handles spatial, animated, high-performance rendering; DOM handles text, forms, accessibility — each does what it does best
+
+**File Paths (Key Sources):**
+- Color tokens: `/tmp/void-market-figma/src/styles/theme.css` (182 lines, root + dark theme)
+- Typography: `theme.css` lines 136-180 (base styles for h1-h4, labels, buttons, inputs)
+- Component library: `/tmp/void-market-figma/src/app/components/ui/` (48 files)
+- Game screens: `/tmp/void-market-figma/src/app/components/` (10 game-specific components)
+- Layout: `/tmp/void-market-figma/src/app/components/GameLayout.tsx` (HUD + Sidebar + Chat architecture)
+- Icons: `lucide-react` v0.487.0, 30+ icons extracted from component imports
+- Dependencies: `package.json` — React 18, Tailwind 4, Radix UI, shadcn/ui, date-fns, recharts, sonner
+
+**Design Token Highlights:**
+- Base font size: 16px
+- Base spacing unit: 4px (Tailwind scale)
+- Base border radius: 10px (`--radius: 0.625rem`)
+- HUD height: 64px (h-16)
+- Sidebar width: 256px (w-64), 64px collapsed (w-16)
+- Chat width: 320px (w-80)
+- Transition duration: 200ms
+- Backdrop blur: 8px (blur-sm)
+- Focus ring: 3px at 50% opacity
+
+**Implementation Guidance:**
+- For **PixiJS**: Use hex color mapping (provided in doc Section 18.1)
+- For **React**: Import shadcn/ui components, apply Tailwind utilities
+- For **Vanilla DOM**: Use CSS custom properties from `theme.css`
+- For **Any framework**: Follow spacing, typography, color semantic guidelines
+
+**Related Files:**
+- `docs/DESIGN-SYSTEM.md` — the deliverable (21 sections, comprehensive reference)
+- `docs/UX-BRIEF.md` — strategic UX decisions (this design system implements those decisions)
+- `.squad/decisions.md` — UX design brief decision now in canonical record
+
+**Status:** Complete. Design system is production-ready, framework-agnostic, and fully aligned with the Figma prototype.
+

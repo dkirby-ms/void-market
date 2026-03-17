@@ -1100,3 +1100,63 @@ Broke Void Market into 4 phases with 44 total tasks (Phase 0: 9, Phase 1: 35). K
 
 - `docs/PROJECT-PLAN.md` — Full breakdown with task IDs, owners, dependencies, exit criteria
 - `.squad/decisions/inbox/hal-project-phasing.md` — Decision record for team
+
+## Learnings: Figma Design Conversion Strategy (2026-03-17)
+
+**Context:** Analyzed Figma Make export at `/tmp/void-market-figma/` to determine how to convert React/Tailwind prototype into PixiJS + Colyseus architecture.
+
+**Key Decision:** Adopt React for DOM overlays. Figma export provides ~3,000 lines of production-ready React + 48 shadcn/ui components (Radix + Tailwind). Rewriting to vanilla TypeScript would cost 3-4 weeks for negligible benefit (~35KB bundle size saving). Architecture docs never mandated vanilla TS—"DOM overlay" was framework-agnostic.
+
+**Hybrid Architecture Validated:**
+- **PixiJS:** Galaxy map canvas (WebGL for 500+ sectors) — rewrite Figma's Canvas 2D logic
+- **React:** Everything else (HUD, trading, chat, forms, alliance) — adapt Figma components + wire Colyseus state
+- This matches UX-BRIEF.md "Hybrid Canvas/DOM Architecture" requirement
+
+**Component Mapping:**
+- GalaxyMap.tsx: Rewrite (Canvas 2D → PixiJS WebGL, 2-3 days)
+- GameLayout, HUD, Sidebar, Chat, Trading, Sector/Planet/Fleet/Alliance Views: Keep + adapt (wire Colyseus state)
+- shadcn/ui (48 components): Keep as-is, no changes needed
+- React Router 7: Keep as-is (already latest stable)
+
+**What We Extract:**
+- TypeScript interfaces from `gameState.ts` → map to Colyseus Schema classes (Pemulis P1-1)
+- Design tokens from `theme.css` → dark zinc-950 base, violet accents, oklch colors
+- Layout structure → GameLayout wrapper, persistent HUD, toggleable Sidebar/Chat
+- Icons from lucide-react (~30 icons, 3KB gzipped, ISC license)
+
+**What We Drop:**
+- motion, canvas-confetti, recharts, MUI, react-dnd, vaul (demo libraries, not needed for MVP)
+- Saves ~50KB bundle size
+
+**Timeline Impact:** Accelerates Phase 1 by ~5.5 days (6 days saved on client UI - 3 hours for React setup). Gately's tasks (P1-18 through P1-23) significantly faster with existing components.
+
+**Colyseus + React Pattern:**
+```typescript
+useColyseusState(room.state.player, ['turns', 'credits']) → re-render on delta sync
+room.send('trade:buy', { orderId }) → server validates → state syncs back
+```
+No local optimistic updates in Phase 1 (server is source of truth).
+
+**Bundle Size:** ~260KB gzipped (React 45KB + Radix 40KB + PixiJS 120KB + Colyseus 25KB + utilities 30KB). Acceptable for game client.
+
+**Risk Mitigation:** Accept 50-100ms Colyseus → React state sync latency. Server authoritative. Optimistic updates only if users complain in Phase 2+.
+
+**Key Files:**
+- `/tmp/void-market-figma/src/app/components/GalaxyMap.tsx` — canvas 2D logic (camera, zoom, sector rendering) to port to PixiJS
+- `/tmp/void-market-figma/src/app/lib/gameState.ts` — TypeScript interfaces for Colyseus schemas
+- `/tmp/void-market-figma/src/styles/theme.css` — design tokens (oklch colors, spacing, typography)
+- `/tmp/void-market-figma/src/app/components/ui/` — 48 shadcn/ui components (copy directly)
+- `/tmp/void-market-figma/package.json` — dependencies (React 18.3.1, Radix UI, Tailwind CSS 4, lucide-react 0.487.0)
+
+**Decision Document:** `docs/FIGMA-CONVERSION-STRATEGY.md` (comprehensive strategy with component mapping, dependency analysis, PROJECT-PLAN.md impact, Colyseus integration patterns)
+
+**User Preferences Observed:**
+- Prefers direct, decisive recommendations over analysis paralysis
+- Values pragmatic trade-offs (speed > bundle size purity)
+- Expects comprehensive strategy docs with risk assessment, alternatives considered, success criteria
+- Wants explicit task modifications to PROJECT-PLAN.md
+
+**Next Actions:**
+- Gately: Execute P0-4.1 (React + shadcn/ui setup, copy Figma UI components)
+- Pemulis: Use Figma `gameState.ts` as reference for Colyseus schemas (P1-1)
+- Mario: Review Figma theme vs. UX-BRIEF.md for consistency

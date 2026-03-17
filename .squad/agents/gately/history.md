@@ -61,6 +61,49 @@
 
 ---
 
+## Cross-Agent Update — 2026-03-17: React Adoption & Design System Alignment
+
+**From:** Squad Scribe (Hal + Mario session)  
+**Event:** Figma design analysis complete; React adoption decision + design system reference
+
+**What Changed:**
+- **Hal Decision:** Adopt React 18 for DOM overlays (hybrid PixiJS + React model)
+  - Figma export analyzed: 6 screens, 48 shadcn/ui components, ~3,000 lines working React code
+  - Cost-benefit: 3-4 week vanilla TS rewrite vs. ~5.5 day Phase 1 acceleration via React adoption
+  - Bundle cost: ~35KB (acceptable for game client)
+  - Effort savings: 15+ days (component library, forms, accessibility)
+
+- **Mario Decision:** Design system reference extracted and documented
+  - Framework-agnostic (can implement in PixiJS, DOM, React, or hybrid)
+  - 21 sections: colors (OKLCH + hex), typography, spacing, 58 components, layout, accessibility, responsive design
+  - Single source of truth preventing UI drift
+  - Section 15: PixiJS implementation guidance (canvas colors, hover states, rendering notes)
+
+**Your Task (P0-4.1):**
+- Set up React 18.3.1 + React Router 7.13.0
+- Copy Tailwind CSS 4.1.12 configuration from Figma export
+- Install Radix UI primitives (20 packages) + lucide-react 0.487.0
+- Copy shadcn/ui component library (48 primitives) to `client/src/components/ui/`
+- Integrate PixiJS 8.0.0 + pixi-viewport 5.0.0 for canvas rendering
+
+**Your Implementation Guide:**
+- GameLayout.tsx: Persistent wrapper with HUD (64px top), Sidebar (256px → 64px mobile), Chat (320px → bottom sheet)
+- GalaxyMap.tsx: Rewrite to PixiJS using Section 15 colors and rendering patterns
+- Other screens: Use React + Tailwind as-is (HUD, SectorView, PlanetView, FleetView, TradingView, AllianceView)
+
+**Related Decisions:**
+- `.squad/decisions.md` — "Figma Design System Conversion Strategy" (Hal)
+- `.squad/decisions.md` — "Design System Reference" (Mario)
+- `docs/FIGMA-CONVERSION-STRATEGY.md` — Full strategy (728 lines)
+- `docs/DESIGN-SYSTEM.md` — Full design reference (867 lines)
+
+**Coordination:**
+- Pemulis: Use Figma `gameState.ts` as reference for Colyseus schemas
+- Mario: Verify Figma theme aligns with UX-BRIEF.md decisions
+- Phase 1 acceleration: 4 weeks → 3.5 weeks (critical path: Pemulis's server tasks remain bottleneck)
+
+---
+
 ## 2026-03-15: Session Resilience — Client-Side Reconnection Implementation
 
 **From:** Squad Scribe  

@@ -77,6 +77,48 @@
 - `BaseGameRoom` can safely drive bot turns by scheduling a 200ms `clock.setTimeout()` whenever `state.currentTurn` belongs to the CPU, then replaying the normal action-validation/action-handler/game-end pipeline through a synthetic client object.
 - The greedy MVP heuristic in `server/src/games/checkers/CpuOpponent.ts` is deterministic: captures win first, then king promotions, then moves that land closer to promotion. Regression coverage lives in `cpuOpponent.test.ts`, `BaseGameRoom.test.ts`, and `lobby-pregame.test.ts`.
 
+---
+
+## Cross-Agent Update — 2026-03-17: React Adoption & Design System Alignment
+
+**From:** Squad Scribe (Hal + Mario session)  
+**Event:** Figma design analysis complete; React adoption decision + design system reference
+
+**What Changed:**
+- **Hal Decision:** Adopt React 18 for DOM overlays (hybrid PixiJS + React model)
+  - Figma export: 6 screens, 48 shadcn/ui components, ~3,000 lines React code
+  - Cost-benefit: 3-4 week vanilla TS rewrite vs. ~5.5 day Phase 1 acceleration
+  - React integration accelerates Phase 1 (4 weeks → 3.5 weeks), saves 15+ days
+
+- **Mario Decision:** Design system reference extracted
+  - Framework-agnostic (colors, typography, spacing, 58 components, layout, accessibility, responsive)
+  - Single source of truth
+  - Section 15: PixiJS implementation guidance
+
+**Your Task (P1-1 Context):**
+- Use Figma `gameState.ts` as reference for Colyseus schema design
+- Example interfaces → schemas:
+  - `PlayerResources` → `PlayerSchema` (credits, minerals, energy)
+  - `Sector` → `SectorSchema` (id, name, position, planets, connections)
+  - `Fleet` → `FleetSchema` (ships, cargo, location, destination)
+  - `Planet` → `PlanetSchema` (owner, type, production, defense)
+  - `TradeOrder` → `TradeOrderSchema` (player, type, resource, amount, price)
+  - `Alliance` → `FederationSchema` (members, treasury, relations)
+  - `ChatMessage` → `MessageSchema` (sender, message, timestamp)
+
+**Related Decisions:**
+- `.squad/decisions.md` — "Figma Design System Conversion Strategy" (Hal)
+- `.squad/decisions.md` — "Design System Reference" (Mario)
+- `docs/FIGMA-CONVERSION-STRATEGY.md` — Full strategy (728 lines)
+- `docs/DESIGN-SYSTEM.md` — Full design reference (867 lines, Section 15 is PixiJS guide)
+
+**Coordination:**
+- Gately: Implementing React + Tailwind CSS 4 setup (P0-4.1)
+- Mario: Aligning Figma theme with UX-BRIEF.md
+- Phase 1 timeline: Remains 4 weeks (now 3.5 weeks with React), Colyseus schemas are critical path
+
+---
+
 ### Shared-device controller lifecycle (2026-03-16)
 
 - Head-to-head mode reuses one real `sessionId` to control a synthetic second `PlayerInfo`, so connectivity must be tracked at the controller level instead of treating the synthetic seat as independently online.

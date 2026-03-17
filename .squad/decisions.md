@@ -105,6 +105,97 @@ See `.squad/decisions/inbox/pemulis-game-systems.md` for full decision document.
 
 ---
 
+### 2026-03-17: Figma Design System Conversion Strategy (Hal)
+**Status:** Proposed  
+**Owner:** Hal (Lead)  
+**Artifact:** `docs/FIGMA-CONVERSION-STRATEGY.md`
+
+**Decision:** Adopt React 18 for DOM overlays in Void Market instead of rewriting to vanilla TypeScript.
+
+**Rationale:**
+- Figma Make export provides production-ready React + Tailwind + shadcn/ui implementation (6 screens, 48 components, ~3,000 lines)
+- Vanilla TS rewrite costs 3-4 weeks for negligible benefit (~35KB bundle savings)
+- Architecture never mandated vanilla TS—only requires PixiJS for galaxy map and "DOM overlay" for UI (framework-agnostic)
+- React adoption accelerates Phase 1 by ~5.5 days (4 weeks → 3.5 weeks), saves ~15 days of component/form/accessibility work
+
+**Hybrid Rendering Model:**
+- **PixiJS 8 (WebGL):** Galaxy map (500+ sectors, camera controls, warp routes)
+- **React 18 (DOM):** HUD, trading panels, chat, alliance management, planet/fleet views
+- **Colyseus:** State sync (server authoritative)
+
+**Component Mapping:**
+- Keep as-is: GameLayout, HUD, Sidebar, AllianceChat, TradingView, SectorView, PlanetView, FleetView, AllianceView (DOM React)
+- Rewrite: GalaxyMap.tsx → PixiJS renderer (2-3 days)
+- Copy: 48 shadcn/ui components (0 effort)
+
+**Dependencies to Adopt:** React 18.3.1, React Router 7.13.0, Radix UI (20 packages), Tailwind 4.1.12, lucide-react 0.487.0  
+**Dependencies to Add:** pixi.js 8.0.0, pixi-viewport 5.0.0, colyseus.js 0.16.0  
+**Bundle Size:** ~260KB (acceptable for game client)
+
+**Success Criteria:** Phase 1 ships on time, 60 FPS desktop/30 FPS mobile, < 500KB bundle, Colyseus state sync works, UI accessible, team productive.
+
+**Next Steps:** Gately executes P0-4.1 (React + Tailwind setup). Pemulis uses Figma gameState.ts for Colyseus schemas. Mario reviews Figma theme vs UX-BRIEF.md.
+
+---
+
+### 2026-03-17: Design System Reference (Mario)
+**Status:** Complete  
+**Owner:** Mario (UX Consultant)  
+**Artifact:** `docs/DESIGN-SYSTEM.md`
+
+**Decision:** Extract all design decisions from Figma Make export into a framework-agnostic design system reference.
+
+**Why:** 
+- Figma export is production-ready but tied to React implementation
+- Team may implement UI in PixiJS (canvas), React (DOM), or hybrid
+- Design system document decouples visual language from implementation framework
+- Enables single source of truth preventing UI drift between design and implementation
+
+**What Was Extracted (21 sections, 867 lines):**
+1. Color System: 38 theme variables (dark theme, semantic colors, resource colors, player colors, chart colors, OKLCH + hex mappings)
+2. Typography: 6-tier size scale, 4 weights, monospace for numeric data
+3. Spacing System: 8px Tailwind grid, common patterns
+4. Border Radius: 4 sizes (6px–12px)
+5. Effects & Motion: Glass-morphism, transitions, focus rings
+6. Button Variants: 6 variants, 4 sizes
+7. Form Elements: Input, Select, Textarea, Checkbox, Radio, Switch (full specs)
+8. Data Visualization: Progress bars, resource bars, status indicators, badges
+9. Component Inventory: 48 shadcn/ui primitives + 10 game-specific screens
+10. Layout Architecture: HUD (64px), Sidebar (256px desktop → 64px mobile), Chat (320px desktop → bottom sheet mobile)
+11. Iconography: Lucide React 30+ icons (5 sizes, 2px stroke)
+12. Canvas/Map Rendering: PixiJS implementation guidance (colors, hover states, overlays, legend)
+13. Accessibility: WCAG AA compliance (4.5:1 contrast, keyboard nav, screen readers, color independence)
+14. Responsive Design: Mobile-first (375px), breakpoint strategy, grid patterns
+15. Card/Panel Patterns: Standard card, stat card, glass panel, tooltip/popover
+16. Navigation Patterns: Breadcrumb, sidebar nav, tabs
+17. Implementation Notes: PixiJS hex mappings, Tailwind CSS 4 integration, Radix usage
+18. Design Tokens Summary: Quick-reference TypeScript object
+19. Component State Matrix: Button/Input/Card/Nav/Badge/Checkbox/Switch states
+
+**Key Design Decisions:**
+- Dark-first strategy (zinc-950 background)
+- Glass-morphism aesthetic (semi-transparent overlays)
+- Violet (not blue) as primary accent
+- Monospace for all numeric data
+- Touch targets ≥44px (WCAG 2.1)
+- No custom fonts (system font stack)
+
+**Impact:** Gately can implement PixiJS galaxy renderer (Section 15). Pemulis understands UI data requirements. Steeply can validate accessibility/responsiveness. All agents align to single source of truth.
+
+**Next Steps:** Gately uses Design System Section 15 for PixiJS galaxy implementation. Steeply audits UI against spec. Design changes update both Figma and this document.
+
+---
+
+### 2026-03-17: User Directive — Figma Design Alignment (Copilot)
+**Status:** Captured  
+**Context:** Design system extraction + conversion strategy
+
+User directive: Align all UI implementation to the Figma Make design export (`docs/void-market.zip`), not the UX brief. The Figma export is React/Tailwind/Radix/shadcn—this needs conversion to the project's PixiJS + DOM overlay architecture.
+
+**Action:** Hal and Mario have completed the analysis and extraction. Decisions above provide the conversion strategy and design system reference.
+
+---
+
 ### 2026-03-17: UX Design Brief for Void Market (Mario)
 **Status:** Accepted  
 **Owner:** Mario (UX Consultant)
