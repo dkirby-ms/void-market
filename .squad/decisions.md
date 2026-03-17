@@ -186,6 +186,37 @@ See `.squad/decisions/inbox/pemulis-game-systems.md` for full decision document.
 
 ---
 
+### 2026-03-17: Track Project Plan as GitHub Issues (Hal)
+**Status:** Implemented  
+**Owner:** Hal (Lead)
+
+Project plan tasks from `docs/PROJECT-PLAN.md` are now tracked as GitHub issues in `dkirby-ms/void-market`, with modifications from `docs/FIGMA-CONVERSION-STRATEGY.md` applied.
+
+**Structure:**
+- Issues #3–#12: Phase 0 (10 scaffolding tasks)
+- Issues #13–#48: Phase 1 (36 MVP trading loop tasks)
+- Issues #49–#51: Phase 2–4 epic placeholders
+- 5 milestones (1 per phase)
+- 18 labels: phase (5), squad (7), priority (2), type (4)
+
+**Label Taxonomy:**
+| Category | Labels | Purpose |
+|----------|--------|---------|
+| Phase | `phase:0-scaffold` through `phase:4-polish` | Group by implementation phase |
+| Squad | `squad:hal`, `squad:gately`, `squad:pemulis`, `squad:steeply`, `squad:marathe`, `squad:joelle`, `squad:mario` | Owner assignment |
+| Priority | `priority:critical-path`, `priority:normal` | Identifies blocking tasks |
+| Type | `type:feature`, `type:infrastructure`, `type:docs` | Work category |
+
+**Conventions:**
+- Every issue includes: description, acceptance criteria, dependencies, owner, effort estimate
+- Figma strategy modifications noted inline in affected issues
+- Phase 2–4 are epic-level only—decompose when prior phase ships
+- Dependencies expressed as `Depends on #N` in issue bodies
+
+**Impact:** All squad members reference GitHub issue numbers when creating branches and PRs. The issue board is now the canonical view of project status.
+
+---
+
 ### 2026-03-17: User Directive — Figma Design Alignment (Copilot)
 **Status:** Captured  
 **Context:** Design system extraction + conversion strategy

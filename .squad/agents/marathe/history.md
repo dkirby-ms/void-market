@@ -862,3 +862,18 @@ permissions:
 - CI workflows (P0-7) before Steeply runs coverage gates
 
 **Read:** `docs/PROJECT-PLAN.md` for full task breakdown, sizing, and dependencies.
+
+## Cross-Agent Update (2026-03-17) — Project Tasks as GitHub Issues
+
+**From:** Squad Scribe  
+**Event:** Hal created GitHub issues from PROJECT-PLAN.md
+
+**Update:** All 44 project plan tasks are now tracked as GitHub issues #3–#51 with squad:{member} labels.
+
+**Your Issues:** Filter `squad:marathe` in GitHub issues. Phase 0–1 infra tasks are assigned with dependencies and acceptance criteria.
+
+**Branching:** Use `squad/{issue-number}-{slug}` convention when creating feature branches. Links commits to issues for traceability.
+
+**Impact:** Project status is now visible in GitHub issues board. Milestones track phase progress. Dependency graph shows blocking relationships.
+
+**Reference:** `.squad/decisions.md` → "Track Project Plan as GitHub Issues" for label taxonomy and conventions.

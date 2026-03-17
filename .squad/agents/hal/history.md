@@ -1160,3 +1160,93 @@ No local optimistic updates in Phase 1 (server is source of truth).
 - Gately: Execute P0-4.1 (React + shadcn/ui setup, copy Figma UI components)
 - Pemulis: Use Figma `gameState.ts` as reference for Colyseus schemas (P1-1)
 - Mario: Review Figma theme vs. UX-BRIEF.md for consistency
+
+---
+
+### Session: GitHub Issues Creation (2026-03-17)
+
+**What happened:** Created full GitHub issue board from PROJECT-PLAN.md + FIGMA-CONVERSION-STRATEGY.md modifications.
+
+**Created:**
+- 18 labels (5 phase, 7 squad, 2 priority, 3 type)
+- 5 milestones (Phase 0-4)
+- 49 GitHub issues (#3-#51):
+  - Phase 0: 10 issues (#3-#12) — scaffolding tasks
+  - Phase 1: 36 issues (#13-#48) — MVP trading loop tasks
+  - Phase 2-4: 3 epic issues (#49-#51) — future phase placeholders
+
+**Issue Number Map:**
+| Task | Issue | Owner |
+|------|-------|-------|
+| P0-1 | #3 | Pemulis |
+| P0-2 | #4 | Pemulis |
+| P0-3 | #5 | Pemulis |
+| P0-4 | #6 | Gately |
+| P0-4.1 | #7 | Gately |
+| P0-5 | #8 | Marathe |
+| P0-6 | #9 | Marathe |
+| P0-7 | #10 | Marathe |
+| P0-8 | #11 | Marathe |
+| P0-9 | #12 | Steeply |
+| P1-1 | #13 | Pemulis |
+| P1-2 | #14 | Pemulis |
+| P1-3 | #15 | Pemulis |
+| P1-4 | #18 | Pemulis |
+| P1-5 | #19 | Pemulis |
+| P1-6 | #21 | Pemulis |
+| P1-7 | #22 | Pemulis |
+| P1-8 | #23 | Pemulis |
+| P1-9 | #20 | Pemulis |
+| P1-10 | #24 | Pemulis |
+| P1-11 | #25 | Pemulis |
+| P1-12 | #26 | Pemulis |
+| P1-13 | #27 | Pemulis |
+| P1-14 | #28 | Pemulis |
+| P1-15 | #29 | Gately |
+| P1-16 | #30 | Gately |
+| P1-17 | #31 | Gately |
+| P1-18 | #32 | Gately |
+| P1-19 | #33 | Gately |
+| P1-20 | #34 | Gately |
+| P1-21 | #35 | Gately |
+| P1-22 | #36 | Gately |
+| P1-23 | #37 | Gately |
+| P1-24 | #16 | Mario |
+| P1-24.1 | #17 | Mario+Gately |
+| P1-25 | #38 | Mario |
+| P1-26 | #39 | Mario |
+| P1-27 | #40 | Steeply |
+| P1-28 | #41 | Steeply |
+| P1-29 | #42 | Steeply |
+| P1-30 | #43 | Steeply |
+| P1-31 | #44 | Steeply |
+| P1-32 | #45 | Steeply |
+| P1-33 | #46 | Steeply |
+| P1-34 | #47 | Joelle |
+| P1-35 | #48 | Joelle |
+| Phase 2 | #49 | Team |
+| Phase 3 | #50 | Team |
+| Phase 4 | #51 | Team |
+
+**Label Taxonomy:**
+- Phase: `phase:0-scaffold` through `phase:4-polish`
+- Squad: `squad:{agent-name}` (7 agents)
+- Priority: `priority:critical-path`, `priority:normal`
+- Type: `type:feature`, `type:infrastructure`, `type:docs`
+
+**Milestone IDs:** Phase 0=1, Phase 1=2, Phase 2=3, Phase 3=4, Phase 4=5
+
+**Figma Strategy Modifications Applied:**
+- P0-4 updated: includes React 18 setup
+- P0-4.1 added: shadcn/ui + Tailwind setup (Gately, 2hr)
+- P1-18: 1 day → 6 hours (Figma SectorView.tsx)
+- P1-19: 1 day → 2 hours (Figma HUD.tsx)
+- P1-20: 2 days → 1 day (Figma TradingView.tsx)
+- P1-21: 1 day → 4 hours (Figma FleetView.tsx)
+- P1-22: 0.5 day → 1 hour (sonner library)
+- P1-23: 1 day → 4 hours (shadcn/ui forms)
+- P1-24.1 added: Extract design tokens (Mario+Gately, 1hr)
+
+**Dependencies Cross-Referenced:** All issue bodies contain `Depends on #N` references to actual GitHub issue numbers.
+
+**Branch Convention:** Feature branches should use `squad/{issue-number}-{slug}` per existing branching strategy.
