@@ -1066,3 +1066,37 @@ User provided redesign package at `docs/designs/redesign/` with React/Tailwind r
 - Team configures GitHub Environments (dev/uat/prod) with Azure OIDC secrets
 - Feature development on `squad/*` branches begins immediately
 - Schedule decisions review post-MVP (30 days) to stress-test architecture and branching
+
+---
+
+## Project Phasing Decisions (2026-03-17)
+
+### What I decided
+
+Broke Void Market into 4 phases with 44 total tasks (Phase 0: 9, Phase 1: 35). Key phasing decisions:
+
+1. **Phase 0 (scaffolding) is separate from Phase 1 (gameplay).** No game logic until the monorepo builds, lints, and connects. ~1 week.
+2. **Phase 1 MVP is the trading loop only.** Galaxy generation, navigation, port trading, turn system, ship progression, persistence, basic auth, PixiJS rendering, HUD. No combat/planets/federations. ~4 weeks.
+3. **Phases 2–4 are NOT decomposed.** Feature-level only. We decompose when Phase 1 ships. Premature planning wastes effort.
+4. **Server and client tracks run in parallel** after shared schemas land. Maximizes throughput.
+5. **Persistence is in Phase 1, not deferred.** Players must survive server restarts for MVP to be meaningful.
+6. **Auth is minimal** — username/password + JWT. No OAuth until later.
+
+### Key dependencies
+
+- Shared schemas (P1-1/2/3) gate both server and client tracks
+- GalaxyRoom (P1-5) is the server critical path
+- Galaxy map renderer (P1-15) is the client critical path
+- Database schema (P1-11) gates all persistence + auth
+- Mario (UX) runs fully parallel — no blockers
+
+### Scope boundaries
+
+- Phase 1 explicitly excludes: combat, planets, federations, NPCs, tech trees, mobile
+- Phase 1 explicitly includes: auth (basic), persistence (full), turn regeneration (not daily reset — uses 1/90s gradual regen per GAME-SYSTEMS.md)
+- Later phases will be decomposed based on Phase 1 learnings
+
+### Artifact
+
+- `docs/PROJECT-PLAN.md` — Full breakdown with task IDs, owners, dependencies, exit criteria
+- `.squad/decisions/inbox/hal-project-phasing.md` — Decision record for team
