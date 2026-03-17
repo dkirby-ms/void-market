@@ -114,9 +114,9 @@
 **Status:** Complete. README reflects current capability and design system foundation.
 
 
-## Galaxy Wars — New Project (2026-03-17)
+## Void Market — New Project (2026-03-17)
 
-**Project:** Galaxy Wars — modern multiplayer space strategy game inspired by TradeWars (BBS classic)
+**Project:** Void Market — modern multiplayer space strategy game inspired by TradeWars (BBS classic)
 **Stack:** Colyseus (multiplayer backend), PixiJS (2D rendering), TypeScript
 **User:** dkirby-ms
 **Prior art:** Builds on Colyseus/PixiJS framework from Primal Grid and Playgrid
@@ -132,4 +132,26 @@
 - Trading between empires (economy/market system)
 - Fleet building (ships for attack and defense)
 - Empire growth and federation diplomacy
+
+## Cross-Agent Context (2026-03-17)
+
+**From:** Squad Orchestration  
+**Work:** Branching strategy and rename complete
+
+**Impact on Joelle (Frontend/Community):**
+- Game renamed "Galaxy Wars" → "Void Market" across all project files
+- Branching strategy live: frontend work on `squad/{issue-number}-{slug}` branches targeting `dev`
+- CI gates on all PRs (build, test, lint with proper TypeScript/ESLint config)
+- Mario's UX brief published with detailed screen inventory and responsive design strategy
+
+**Team context:**
+- Game systems design finalized (Pemulis): turn limits, trading economy, alliances
+- Server architecture approved (Hal): Colyseus + TypeScript monorepo
+- UX strategy established (Mario): 3 fidelity levels, turn counter pacemaker, mobile-first
+- CI/CD ready for feature development (Marathe): 3-branch model with automated versioning
+
+**Next steps:**
+- Begin DOM overlay component library per Mario's UX brief design system
+- Coordinate with Gately on PixiJS canvas/DOM sync patterns
+- Establish frontend testing strategy (unit + E2E for game state, UI components)
 

@@ -1,14 +1,14 @@
-# Galaxy Wars — Squad Team
+# Void Market — Squad Team
 
 ## Project Context
 
-**Project:** Galaxy Wars — A modern multiplayer space strategy game inspired by TradeWars (BBS era)
+**Project:** Void Market — A modern multiplayer space strategy game inspired by TradeWars (BBS era)
 **Stack:** Colyseus (multiplayer backend), PixiJS (2D rendering), TypeScript
 **User:** dkirby-ms
-**Repository:** galaxy-wars
+**Repository:** void-market
 
 **Description:**
-Galaxy Wars lets players explore the galaxy, build outposts and mining stations, settle planets, trade with other empires, build fleets of ships to attack and defend, and grow empires and federations over time. Two core design pillars from TradeWars:
+Void Market lets players explore the galaxy, build outposts and mining stations, settle planets, trade with other empires, build fleets of ships to attack and defend, and grow empires and federations over time. Two core design pillars from TradeWars:
 1. **Turn limits** — each player gets a set number of turns/actions per day, creating strategic tension
 2. **Alliances/Federations** — organic player alliances that form over time in large player bases
 

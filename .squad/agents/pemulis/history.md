@@ -566,9 +566,9 @@ Issue #87 requests CPU-controlled opponents in Backgammon to enable single-playe
 - All 292 tests passing, build and lint clean.
 
 
-## Galaxy Wars — New Project (2026-03-17)
+## Void Market — New Project (2026-03-17)
 
-**Project:** Galaxy Wars — modern multiplayer space strategy game inspired by TradeWars (BBS classic)
+**Project:** Void Market — modern multiplayer space strategy game inspired by TradeWars (BBS classic)
 **Stack:** Colyseus (multiplayer backend), PixiJS (2D rendering), TypeScript
 **User:** dkirby-ms
 **Prior art:** Builds on Colyseus/PixiJS framework from Primal Grid and Playgrid
@@ -585,3 +585,73 @@ Issue #87 requests CPU-controlled opponents in Backgammon to enable single-playe
 - Fleet building (ships for attack and defense)
 - Empire growth and federation diplomacy
 
+
+### Void Market Core Systems Research (2026-03-16)
+
+Completed deep-dive research into three critical game systems for Void Market (TradeWars 2002-inspired multiplayer space strategy):
+
+**Turn Economy Design:**
+- Chose gradual turn regeneration (1 turn/90sec, 2000 cap) over classic daily reset for better Colyseus integration and reduced deadline stress
+- Tiered action costs: exploration cheap (1-3 turns), combat expensive (15-25), building very expensive (50+)
+- Anti-degenerate mechanics: diminishing returns on repeated actions, cooldowns on high-value operations
+- Server-authoritative validation with Colyseus Schema and tick-based turn regen (fast tick 1sec, slow tick 60sec)
+
+**Economy & Trading System:**
+- Three-commodity system (Fuel Ore, Organics, Equipment) preserves TradeWars port-pair trading nostalgia
+- Dynamic stock-based pricing (demand multiplier 1.0x-1.5x based on port stock levels)
+- NPC ports (70%) provide stability, player markets (30%) add depth
+- Multiple resource sinks: combat losses, maintenance costs, NPC taxes (2%), research, alliance projects
+- Regional pricing across 5 galaxy regions creates arbitrage opportunities
+
+**Alliance/Federation System:**
+- 50-member alliance cap prevents mega-blobs, Federations (2-5 alliances) enable larger coordination
+- EVE-inspired standings system (-10 to +10) with 48-hour cooldown on changes
+- Formal war declarations (100k cost, 24hr notice, 7-day minimum duration)
+- Shared resources: treasury (member tax 0-20%), territory (10 sectors max), alliance-funded tech/stations
+- Five ranks: Founder, Admiral, Diplomat, Officer, Member with granular permissions
+
+**Technical Architecture:**
+- Colyseus Schema for state: `players`, `alliances`, `sectors`, `ports`, `treaties` as MapSchema/ArraySchema
+- PostgreSQL persistence: players, alliances, alliance_members, standings, treaties, sectors, ports, trade_history tables
+- Message-based actions: client sends `{ action, data }`, server validates turns, updates state, broadcasts delta
+- PixiJS client: Galaxy map (sector graph), alliance panel (tabs), trade interface (live prices), turn counter HUD
+
+**Key Design Tensions:**
+- Turn system restrictive vs. engaging: Mitigated with free social actions, gradual regen, clear communication
+- Economy inflation risk: Progressive taxes, maintenance scaling, seasonal resets (Phase 2)
+- Alliance mega-blobs: Hard caps, diminishing returns, underdog bonuses
+- Griefing: PvE zones, proportional rewards, reputation system, kick cooldowns (48hr)
+
+**Pattern to Remember:**
+Turn-based gameplay in real-time multiplayer framework = hybrid model where discrete actions (turns) gate server state changes, but state updates broadcast continuously via Colyseus delta patches. Gradual turn regen keeps players engaged without strict login windows, while banking caps prevent always-online advantage.
+
+**Deliverables:**
+- Full design doc: `/docs/GAME-SYSTEMS.md` (35KB, comprehensive system specs)
+- Decision log: `.squad/decisions/inbox/pemulis-game-systems.md` (key architectural choices, open questions, success criteria)
+
+**Next Implementation Priority:**
+1. Prototype TurnManager (Colyseus room with turn regen tick)
+2. Build Port trading system (3 commodities, dynamic pricing)
+3. Alliance CRUD + standings (creation, membership, diplomacy)
+4. Alpha test with 20-50 users for balance validation
+
+## Cross-Agent Context (2026-03-17)
+
+**From:** Squad Orchestration  
+**Work:** Branching strategy and rename complete
+
+**Impact on Pemulis (Game Systems):**
+- Game renaming complete: "Galaxy Wars" → "Void Market" across all project files
+- All references in design docs updated to use "Void Market"
+- Core game systems decision now in canonical `.squad/decisions.md` (merged from inbox)
+
+**Branching strategy live:**
+- Feature branches for game systems work follow `squad/{issue-number}-{slug}` pattern
+- Target branch is `dev`, merge via PR with CI checks (build, test, lint)
+- Automated patch version bumps on successful dev merges
+- Facilitates parallel systems work (turn system, economy, alliances)
+
+**Coordination note:**
+- Hal's architecture decisions and your game systems decisions now merged in decision log
+- Ready to begin TurnManager and Port trading prototypes on `dev` branch
+- Mario's UX brief available for reference on player-facing complexity management

@@ -92,9 +92,9 @@
 **Status:** Complete. Design foundation ready for game-specific sidebar customization.
 
 
-## Galaxy Wars — New Project (2026-03-17)
+## Void Market — New Project (2026-03-17)
 
-**Project:** Galaxy Wars — modern multiplayer space strategy game inspired by TradeWars (BBS classic)
+**Project:** Void Market — modern multiplayer space strategy game inspired by TradeWars (BBS classic)
 **Stack:** Colyseus (multiplayer backend), PixiJS (2D rendering), TypeScript
 **User:** dkirby-ms
 **Prior art:** Builds on Colyseus/PixiJS framework from Primal Grid and Playgrid
@@ -110,4 +110,99 @@
 - Trading between empires (economy/market system)
 - Fleet building (ships for attack and defense)
 - Empire growth and federation diplomacy
+
+### 2026-03-17: UX Research & Design Brief
+
+**Deliverable:** `docs/UX-BRIEF.md` — comprehensive UX design brief covering research, screen inventory, design principles, PixiJS implementation strategy.
+
+**Research Sources:**
+- Neptune's Pride: minimalist star map, data-rich overlays, diplomacy-first design
+- OGame: hierarchical UI drilling, persistent resource panel, accessible information architecture
+- EVE Online: layered data filtering, multiple view modes (3D/2D), search/filter paradigm
+- Modern browser strategy UX: responsive layouts, progressive disclosure, mobile-first design
+
+**Key UX Decisions:**
+1. **Turn Counter is Pacemaker:** Always visible, color-coded (green→amber→red), audio/visual cues at thresholds (3 turns, 1 turn, 0 turns).
+2. **Hybrid Canvas/DOM Architecture:** PixiJS for galaxy map, animations, spatial rendering; DOM for HUD, forms, chat, and accessibility.
+3. **Three Fidelity Levels:** New Player (guided, simple), Standard (balanced), Expert (all data visible, advanced overlays).
+4. **Alliance Integration:** Chat, trading, and diplomacy live in persistent sidebars, not separate windows—social is core, not bolted-on.
+5. **Mobile-First Design:** 375px baseline, touch targets ≥44px, full-screen detail views on mobile, responsive stacking.
+6. **Feedback is Multimodal:** Every action produces visual (toast, animation), audio (chime), and log feedback.
+7. **Information Architecture:** Galaxy (overview) → Sector (drill-down) → Planet (detail) with breadcrumb navigation.
+
+**Core Screens Designed:**
+1. Galaxy Map (home, star field, warp routes, empire status HUD)
+2. Sector View (planet list, threats, local economy)
+3. Planet/Outpost Management (production, defense, upgrades, trading)
+4. Fleet Management (compose, navigate, combine/split)
+5. Trading Interface (market orders, price history, proposals)
+6. Alliance Dashboard (members, treasury, diplomacy, chat)
+7. Player Status HUD (always visible: turn counter, key resources, notifications)
+
+**PixiJS Performance Guidelines:**
+- Culling & LOD: only render visible sectors + margin, simplify distant objects.
+- Use BitmapText for HUD labels (faster than dynamic Text).
+- Batch rendering via spritesheets and container pooling.
+- Minimize GPU filters (glow/blur); fallback on low-end devices.
+- Event sync: PixiJS animations run independent, synced by shared game state.
+
+**Mobile Considerations:**
+- Stack panels vertically on 375px; 2–3 column layout on 768px+.
+- Touch targets ≥44px, no hover-only interactions.
+- Full-screen detail views (galaxy fills screen; tap to drill down).
+- Test on real iOS and Android devices.
+
+**Accessibility (WCAG AA):**
+- All status colors (red, green, amber) paired with text labels or icons.
+- Keyboard navigation (Tab, Enter, arrow keys).
+- Contrast ratio ≥4.5:1 for all text.
+- Alt text for icons; captions for audio cues.
+
+**Learnings (UX Patterns for Strategy Games):**
+- **Information Density Management:** Progressive disclosure beats flat menus. Surface essential info, collapse advanced details.
+- **Turn Economy Communication:** Resource scarcity must create *tension*, not *confusion*. Constant visibility + color coding solves this.
+- **Social Integration:** Alliance, chat, and trading must feel embedded, not tacked-on. Sidebar integration + map notifications + inline proposals.
+- **Feedback Richness:** Turn-based games need *compensatory feedback*. Every action = visual + audio + log entry.
+- **Mobile Responsiveness:** Many strategy players manage empires on commute via mobile. Design for 375px first; scale up gracefully.
+- **Minimalism in Space:** Even dense games (EVE, OGame) succeed by showing calm base view + data on demand. Filters and toggles, not clutter.
+
+**Implementation Roadmap (12 weeks):**
+- Phase 1 (Wks 1–2): PixiJS galaxy renderer, DOM HUD, breadcrumb nav
+- Phase 2 (Wks 3–4): Sector/Planet/Fleet screens, progressive disclosure testing
+- Phase 3 (Wks 5–6): Trading interface, resource visualization
+- Phase 4 (Wks 7–8): Alliance chat, diplomacy, shared intelligence
+- Phase 5 (Wks 9–10): Performance optimization, accessibility audit, mobile testing
+- Phase 6 (Wks 11–12): Polish, sound, animation, launch prep
+
+**Success Metrics:**
+- New player: first turn in < 2 min without help
+- Expert player: 10 actions in < 3 min
+- 95% recall turn counter at a glance
+- 60 FPS desktop, 30 FPS mobile (galaxy map)
+- 50% day-1 → day-2 retention, 70% day-7 understand turn economy
+
+**Related Files:**
+- `docs/UX-BRIEF.md` (full design brief with screen inventory, principles, PixiJS guidelines)
+- `.squad/decisions/inbox/mario-uux-design-brief.md` (decision record)
+
+## Cross-Agent Context (2026-03-17)
+
+**From:** Squad Orchestration  
+**Work:** Branching strategy and rename complete
+
+**Impact on Mario (UX):**
+- Game renamed "Galaxy Wars" → "Void Market" across all project files
+- UX brief decision now in canonical `.squad/decisions.md` (merged from inbox)
+- Branching strategy live: feature work on UI/UX uses `squad/{issue-number}-{slug}` branches
+- Team ready to begin Phase 1 (foundation: galaxy renderer, HUD overlay, breadcrumb nav)
+
+**Key coordination:**
+- Gately (Game Engine) will implement PixiJS canvas/DOM hybrid per your brief
+- Pemulis (Game Systems) designed around turn scarcity pacemaker (your Pillar 1)
+- Hal's (Lead) architecture decisions now published; Colyseus sync patterns documented
+
+**Next steps:**
+- Begin Phase 1 prototyping (PixiJS galaxy renderer + DOM HUD)
+- Coordinate with Gately on canvas/DOM sync patterns
+- Plan user testing for progressive disclosure (fidelity levels) in Phase 2
 
