@@ -954,9 +954,9 @@ User provided redesign package at `docs/designs/redesign/` with React/Tailwind r
 
 
 
-## Galaxy Wars — New Project (2026-03-17)
+## Void Market — New Project (2026-03-17)
 
-**Project:** Galaxy Wars — modern multiplayer space strategy game inspired by TradeWars (BBS classic)
+**Project:** Void Market — modern multiplayer space strategy game inspired by TradeWars (BBS classic)
 **Stack:** Colyseus (multiplayer backend), PixiJS (2D rendering), TypeScript
 **User:** dkirby-ms
 **Prior art:** Builds on Colyseus/PixiJS framework from Primal Grid and Playgrid
@@ -973,3 +973,96 @@ User provided redesign package at `docs/designs/redesign/` with React/Tailwind r
 - Fleet building (ships for attack and defense)
 - Empire growth and federation diplomacy
 
+
+## Learnings
+
+### Architecture Research (2026-03-16)
+
+**TradeWars 2002 Mechanics:**
+- Turn-based with daily limits (250-1000 turns) was key balancing mechanic — prevents grinding, equalizes casual vs hardcore
+- Galaxy as graph structure (sectors = nodes, warps = edges) — ~1000 sectors typical
+- Port trading economy: 3 commodities (Ore, Organics, Equipment), 8 port types
+- Core loop: find trading pairs (adjacent ports buying/selling same commodity) → profit → upgrade ship
+- Ship progression with meaningful trade-offs: cargo vs combat, speed vs defense
+- Corporations = formal alliances with CEO/officer hierarchy
+- Combat via fighter squadrons, planets with citadels and defenses
+- Daily ritual: log in, spend turns optimally, plan tomorrow — highly addictive pattern
+- Social metagame often happened outside game (forums, IRC) — alliances, betrayals, negotiations
+
+**Modern Space Strategy Lessons:**
+- Neptune's Pride: slow tick-based updates enable diplomacy layer, strategic patience > micro
+- OGame: asynchronous timers structure gameplay around real-life schedule
+- Emergent narratives from player conflict more engaging than designed content
+- Transparency builds trust (combat logs, market data, visible move timers)
+
+**Colyseus Architecture Patterns:**
+- Room-based architecture: each room = isolated multiplayer session
+- Authoritative server model: all logic server-side, client predicts and renders
+- Schema system: efficient delta-based state sync (up to 90% bandwidth reduction)
+- TypeScript-first with type-safe client-server communication
+- Built-in matchmaking, horizontal scaling via Redis
+
+**PixiJS Best Practices:**
+- Entity-Component-System pattern for scalable game object architecture
+- Scene management: containers per screen state (Menu, Gameplay, Pause)
+- Separate rendering (client) from simulation (server) in multiplayer
+- Texture atlases, sprite batching for performance
+- Single ticker for main game loop
+
+### Architectural Decisions
+
+**Key file paths:**
+- `/docs/ARCHITECTURE.md` — comprehensive architecture proposal
+- `.squad/decisions/inbox/hal-void-market-architecture.md` — decision log
+
+**Major patterns chosen:**
+1. **Three-room architecture:** GalaxyRoom (persistent world), CombatRoom (instanced battles), FederationRoom (alliance coordination)
+2. **Authoritative server:** Colyseus validates all commands, client is renderer + input handler
+3. **Daily turn limits:** 500 turns/day, non-carrying (use it or lose it)
+4. **Persistent galaxy:** Procedurally generated on boot, shared by all players, can reset seasonally
+5. **PostgreSQL + Redis:** Postgres for persistent state, Redis for hot data and pub/sub
+6. **MVP = trading loop only:** Navigation, ports, commodities, ships. Defer combat/planets/federations until validated.
+
+**Trade-offs:**
+- Persistent galaxy vs instanced: chose persistent for social dynamics, accepted state management complexity
+- Real-time vs turn-based: chose turn-based to honor TradeWars and balance casual/hardcore
+- Monolithic room vs sharded: start with single GalaxyRoom, add spatial partitioning if performance issues
+- Feature complete vs MVP: aggressively cut to trading loop only, iterate based on feedback
+
+**User preferences (dkirby-ms):**
+- Wants modern take on TradeWars 2002 (not just clone)
+- Focus on turn limits and alliances as core differentiators
+- Using Colyseus/PixiJS stack from prior projects (Primal Grid, Playgrid)
+- Prefers TypeScript monorepo structure
+
+### Next Steps
+- Prototype galaxy generation algorithm
+- Implement GalaxyRoom with basic schema (sectors, players, turns)
+- Spike PixiJS rendering (galaxy map visualization)
+- Test Colyseus state sync with movement commands
+
+### Project Rename (2026-03-17)
+- Game renamed from Galaxy Wars to Void Market (slug: void-market)
+- Rename was across all project files, workflows, issue templates, team docs
+
+## Cross-Agent Context (2026-03-17)
+
+**From:** Squad Orchestration  
+**Work:** Branching strategy and rename complete
+
+**Impact on Hal (Lead):**
+- Void Market project identity unified: "Galaxy Wars" → "Void Market" across all files
+- Rename applied consistently to docs, workflows, configs, team files, and code
+- Repo directory preserved as `galaxy-wars` for git continuity
+- All agent histories and team charters updated with new project name
+
+**Branching strategy now live:**
+- 3-tier model (dev/uat/prod) with automated CI/CD workflows
+- Feature development targets `squad/*` branches merging to `dev` via PR
+- Automated semantic versioning: patch on dev, minor/major via promote workflow
+- Production releases via v* tags with automated GitHub release creation
+
+**Next immediate steps:**
+- Team configures GitHub Environments (dev/uat/prod) with Azure OIDC secrets
+- Feature development on `squad/*` branches begins immediately
+- Schedule decisions review post-MVP (30 days) to stress-test architecture and branching

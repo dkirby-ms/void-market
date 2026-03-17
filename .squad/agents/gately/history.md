@@ -899,9 +899,9 @@ Risk renderer rendering phase can now adopt this pattern for armies/territories.
 - All 289 tests passing
 
 
-## Galaxy Wars — New Project (2026-03-17)
+## Void Market — New Project (2026-03-17)
 
-**Project:** Galaxy Wars — modern multiplayer space strategy game inspired by TradeWars (BBS classic)
+**Project:** Void Market — modern multiplayer space strategy game inspired by TradeWars (BBS classic)
 **Stack:** Colyseus (multiplayer backend), PixiJS (2D rendering), TypeScript
 **User:** dkirby-ms
 **Prior art:** Builds on Colyseus/PixiJS framework from Primal Grid and Playgrid
@@ -917,4 +917,26 @@ Risk renderer rendering phase can now adopt this pattern for armies/territories.
 - Trading between empires (economy/market system)
 - Fleet building (ships for attack and defense)
 - Empire growth and federation diplomacy
+
+## Cross-Agent Context (2026-03-17)
+
+**From:** Squad Orchestration  
+**Work:** Branching strategy and rename complete
+
+**Impact on Gately (Game Engine):**
+- Game renamed "Galaxy Wars" → "Void Market" across all project files
+- Mario's UX brief now available with detailed PixiJS implementation strategy (hybrid canvas/DOM, culling, LOD, spritesheets)
+- Architecture decisions from Hal available for engine planning
+- Game systems from Pemulis provide mechanics context (turn limits, trading, alliances)
+
+**Branching strategy live:**
+- Feature branches for galaxy renderer, PixiJS components, etc. use `squad/{issue-number}-{slug}`
+- Development targets `dev` branch with PR CI gates (build, test, lint)
+- Semantic versioning automated (patch on dev, minor/major via promote)
+
+**Next steps for engine work:**
+- Review Mario's UX brief for canvas/DOM architecture guidance
+- PixiJS galaxy renderer as Phase 1 priority per UX roadmap (weeks 1-2)
+- Colyseus state sync testing with movement commands (from Hal's architecture)
+- Coordinate with team on Colyseus version and schema patterns
 

@@ -748,9 +748,9 @@ permissions:
 
 
 
-## Galaxy Wars — New Project (2026-03-17)
+## Void Market — New Project (2026-03-17)
 
-**Project:** Galaxy Wars — modern multiplayer space strategy game inspired by TradeWars (BBS classic)
+**Project:** Void Market — modern multiplayer space strategy game inspired by TradeWars (BBS classic)
 **Stack:** Colyseus (multiplayer backend), PixiJS (2D rendering), TypeScript
 **User:** dkirby-ms
 **Prior art:** Builds on Colyseus/PixiJS framework from Primal Grid and Playgrid
@@ -767,3 +767,78 @@ permissions:
 - Fleet building (ships for attack and defense)
 - Empire growth and federation diplomacy
 
+
+### 2025-01-24: Void Market CI/CD Setup
+
+**Task:** Copy branching strategy and CI/CD automation from `dkirby-ms/playgrid` to Void Market
+
+**Implementation:**
+
+1. **Git branches created:**
+   - `dev` — primary development branch (PRs target here, CI runs here)
+   - `uat` — staging/UAT environment (promoted from dev)
+   - `prod` — production branch (promoted from dev, deployed on v* tags)
+   - `master` — preserved for historical reference
+
+2. **GitHub Actions workflows created:**
+   - `.github/workflows/ci.yml` — Build, test, lint on dev; auto-bump patch versions; create issues on failure
+   - `.github/workflows/deploy-uat.yml` — Deploy to UAT Container App on uat branch push
+   - `.github/workflows/deploy-prod.yml` — Deploy to prod on v* tags; create GitHub releases
+   - `.github/workflows/deploy-infra.yml` — Manual infrastructure deployment (Bicep) with what-if validation
+   - `.github/workflows/promote.yml` — Manual release promotion (version bump, tag, dev→prod PR)
+
+3. **Composite action created:**
+   - `.github/actions/discord-notify/action.yml` — Reusable Discord deployment notifications
+
+4. **Issue templates created:**
+   - `.github/ISSUE_TEMPLATE/bug-report.yml` — Structured bug reporting
+   - `.github/ISSUE_TEMPLATE/feature-request.yml` — Feature suggestions with priority
+   - `.github/ISSUE_TEMPLATE/chore.yml` — Maintenance and infrastructure work
+
+5. **Existing squad workflows:**
+   - Reviewed `.github/workflows/squad-*.yml` files
+   - No changes needed — they don't explicitly target master/dev branches
+   - They trigger on issues/labels/workflow_dispatch, so they work across all branches
+
+**Key architectural decisions:**
+- All CI/CD adapted from Playgrid with "playgrid" → "void-market" replacements
+- Dev is now the primary development branch (not master)
+- UAT provides staging environment for pre-production testing
+- Prod deployments triggered only by version tags (v*)
+- Feature branches follow `squad/{issue-number}-{slug}` naming
+- Path ignoring: CI skips docs/, .squad/, and markdown files
+- Failure tracking: CI failures on dev create GitHub issues automatically
+- Discord integration for deployment visibility
+
+**Decision document:** `.squad/decisions/inbox/marathe-branching-strategy.md`
+
+**Files not committed yet** — all workflow files, actions, templates, and decision doc created locally but not pushed to remote
+
+**Next steps for team:**
+- Review and commit the new CI/CD workflows
+- Configure GitHub Actions secrets/variables for Azure OIDC (AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID)
+- Configure environment-specific variables (ACR_NAME, CONTAINER_APP_NAME, etc.)
+- Set up Discord webhook for deployment notifications
+- Create package.json and workspace structure to match CI expectations
+
+## Cross-Agent Context (2026-03-17)
+
+**From:** Squad Orchestration  
+**Work:** Branching strategy and rename complete
+
+**Impact on Marathe:**
+- Void Market now has production-ready 3-branch model (dev/uat/prod) with automated CI/CD
+- All workflows use Azure OIDC and GitHub environments for secure auth
+- Feature branches follow `squad/{issue-number}-{slug}` naming convention
+- Discord notifications integrated for all deployment workflows
+- GitHub issue templates created for bug/feature/chore tracking
+
+**Relevant to all agents:**
+- Game renamed from "Galaxy Wars" to "Void Market" (user-requested, applied consistently)
+- Repo directory name remains `galaxy-wars` for git stability
+- All team histories and decision logs updated with new project name
+
+**Next immediate steps:**
+- Configure GitHub Environments (dev/uat/prod) with Azure secrets
+- Team begins feature development on `squad/*` branches targeting `dev`
+- Schedule decisions review post-MVP (30 days) to validate branching strategy

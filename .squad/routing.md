@@ -1,4 +1,4 @@
-# Squad Routing — Galaxy Wars
+# Squad Routing — Void Market
 
 ## Domain Routing
 

@@ -356,9 +356,9 @@ Finishing agent should convert .todo() stubs to executable tests using Pemulis/G
 - The IIFE-with-fallback pattern (try PixiJS → try HUD → return null) is now the standard for E2E snapshot extraction when renderer properties may or may not exist.
 
 
-## Galaxy Wars — New Project (2026-03-17)
+## Void Market — New Project (2026-03-17)
 
-**Project:** Galaxy Wars — modern multiplayer space strategy game inspired by TradeWars (BBS classic)
+**Project:** Void Market — modern multiplayer space strategy game inspired by TradeWars (BBS classic)
 **Stack:** Colyseus (multiplayer backend), PixiJS (2D rendering), TypeScript
 **User:** dkirby-ms
 **Prior art:** Builds on Colyseus/PixiJS framework from Primal Grid and Playgrid
@@ -374,4 +374,25 @@ Finishing agent should convert .todo() stubs to executable tests using Pemulis/G
 - Trading between empires (economy/market system)
 - Fleet building (ships for attack and defense)
 - Empire growth and federation diplomacy
+
+## Cross-Agent Context (2026-03-17)
+
+**From:** Squad Orchestration  
+**Work:** Branching strategy and rename complete
+
+**Impact on Steeply (QA/Test):**
+- Game renamed "Galaxy Wars" → "Void Market" across all project files
+- Branching strategy live: feature branches follow `squad/{issue-number}-{slug}` pattern targeting `dev`
+- CI workflow includes build, test, lint gates on all PRs and dev pushes
+- Ready to establish test strategy and E2E coverage patterns for Void Market (coordinate with team)
+
+**Test infrastructure from Playgrid available:**
+- CI test execution pattern proven and working
+- Can adapt test structure and tooling from previous Colyseus project
+- E2E test patterns (grey-box) established from Playgrid work
+
+**Next steps:**
+- Review Hal's architecture and Pemulis's game systems for test strategy scope
+- Establish test coverage targets for trading loop MVP
+- Coordinate with Gately on PixiJS rendering testability and canvas mocking strategies
 
