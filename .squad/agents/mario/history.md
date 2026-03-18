@@ -408,3 +408,77 @@
 
 **Status:** Complete. Design system is production-ready, framework-agnostic, and fully aligned with the Figma prototype.
 
+---
+
+## 2026-03-17: Galaxy Map Interaction Spec — P1-25 Complete
+
+**From:** Mario (UX Consultant)  
+**Work:** Comprehensive galaxy map interaction spec for 500-sector persistent game universe  
+**Artifact:** `docs/GALAXY-MAP-SPEC.md` (1063 lines, ready for implementation)  
+**PR:** #67 (squad/38-galaxy-wireframes → dev)
+
+**Specification Scope:**
+- **Zoom Levels:** 3-tier architecture (Galaxy/Region/Sector) with rendering specs and information density per zoom
+- **Interaction States:** Default, hover (desktop), selected, current location (pulsing), warp route highlights with multi-hop preview
+- **Information Density Strategy:** Progressive disclosure—Galaxy view minimal (colors/routes only), Region adds IDs + port dots + tooltips, Sector shows full detail panel
+- **Mobile-First (375px):** Touch interactions (tap/tap-hold/pinch-zoom), bottom sheet detail panels, collapsible info sections, 44px minimum touch targets per WCAG 2.1 AA
+- **Responsive Breakpoints:** Mobile (375–639px), Tablet (640–1023px), Desktop (1024px+) with adaptive layout
+- **Click Target Sizing:** 44–48px minimum all elements, ≥8px gaps between sectors, touch zone overlay strategy for sub-44px canvas elements
+- **Color & Animation:** Zinc/violet palette with contrast ratios verified (WCAG AA), 200–400ms transitions, pulse effects, glow on hover/selection
+- **Accessibility:** Keyboard nav (Tab/Arrows/Enter/Esc), focus rings (3px oklch(0.439 0 0)), ARIA labels, semantic HTML, color independence
+
+**Key Design Decisions:**
+1. **Galaxy View is the calm center** — no labels, just colors and routes; prevents cognitive overload; matches Neptune's Pride/EVE design patterns
+2. **Sector nodes scale with zoom but maintain 44px tap zones** — PixiJS renders small (3–16px) but invisible touch overlays expand on mobile
+3. **Warp routes interactive** — hover brightens and shows destination sector ID preview; click on label zooms or confirms fleet jump
+4. **Hover delay 300ms** — prevents flashing on quick pointer motion; tooltips appear after delay
+5. **Current location pulsing** — 2s breathe cycle, distinct from hover/select to always indicate "you are here"
+6. **Bottom sheet for mobile details** — slides up from bottom, collapsible sections save vertical space, swipe-down to close
+7. **Info panel right-side fixed (desktop) or bottom sheet (mobile)** — keeps map interaction focus while providing detail
+8. **Async warp route preview** — hovering a connected sector shows *its* routes (two hops ahead), helps with multi-jump planning
+
+**Color Tokens & Mappings:**
+- Neutrals: zinc-700 (neutral sectors), zinc-300/400 (labels)
+- Interactive: violet-500/400 (hover/select states, routes, focus rings)
+- Status: green-500 (safe), amber-500 (warning), red-600 (danger)
+- Players: red-600, blue-500, green-600 (+ 20% glow on controlled sectors)
+
+**Animation Spec:**
+- Hover: 200ms ease-out (scale 1.0 → 1.5, glow fade-in)
+- Select: 100ms ease-out (ring appears, scale 1.0 → 1.1)
+- Pulse: 2s ease-in-out (current location breathe)
+- Zoom transition: 400ms ease-in-out
+- Panel slide (mobile): 300ms ease-out-cubic
+- Tooltip fade: 150ms ease-out (after 300ms delay)
+
+**Touch Interaction Model:**
+- Single tap: select sector + open detail panel
+- Tap-and-hold (500ms): show tooltip bottom sheet
+- Double-tap: zoom in one level
+- Pinch-to-zoom: scale map (Galaxy ↔ Region ↔ Sector)
+- Two-finger pan: drag map
+- Swipe down on panel: dismiss detail sheet
+
+**Implementation Checklist (Ready for Dev):**
+- [ ] PixiJS rendering: sector nodes (3–4/6–8/12–16px), warp routes (1–2px, variable opacity), labels, star field
+- [ ] Interactive behavior: hover (enlarge+glow+tooltip), selection (ring), current location (pulse)
+- [ ] Warp route interaction: hover brightens + shows destination, click confirms/zooms
+- [ ] Mobile gestures: tap/hold/double-tap/pinch/pan all working
+- [ ] Bottom sheet: collapsible sections, drag handle, swipe-dismiss
+- [ ] Accessibility: keyboard nav, focus rings, ARIA labels
+- [ ] Responsive: breakpoint-based layout switching (mobile/tablet/desktop)
+
+**Cross-Functional Impact:**
+- **Rendering (Gately/PixiJS team):** Uses design tokens from DESIGN-SYSTEM.md Section 15 + 18.1; hex color mapping provided
+- **UX Flow:** Integrates with fleet management (send fleet via warp route label click) and trading (sector detail panel)
+- **Mobile (Responsive design team):** Bottom sheet pattern establishes reusable interaction model for future planet/fleet panels
+- **Accessibility:** Sets WCAG 2.1 standard for all future canvas interactions (44px minimum, keyboard nav, focus rings)
+
+**Related Docs:**
+- `docs/DESIGN-SYSTEM.md` — Section 15 (Canvas/Map Rendering), Section 18.1 (PixiJS color mapping)
+- `docs/DESIGN-TOKENS.md` — quick-reference token table (colors, spacing, animations)
+- `docs/UX-BRIEF.md` — strategic context (galaxy map as home screen, progressive disclosure, turn economy UX)
+- `shared/src/design-tokens.ts` — Canvas.* colors for PixiJS implementation
+
+**Status:** Complete & Ready for Review. Wireframes use ASCII art (no images); implementation checklist enables direct dev handoff.
+

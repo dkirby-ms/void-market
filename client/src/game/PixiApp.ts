@@ -1,29 +1,22 @@
-import { Application, Graphics } from "pixi.js";
+/**
+ * PixiApp — application entry point.
+ * Initializes PixiJS 8, galaxy viewport, and the data-driven
+ * galaxy renderer. Currently uses mock data (replaced by Colyseus
+ * state sync in issue #31).
+ */
+import { Application } from "pixi.js";
+import { Canvas } from "@void-market/shared";
+import { GalaxyRenderer } from "./GalaxyRenderer.js";
+import { createGalaxyViewport, resizeViewport } from "./GalaxyViewport.js";
+import { generateMockGalaxy } from "./mockGalaxyData.js";
 
-const STAR_COUNT = 200;
-const BG_COLOR = 0x09090b; // zinc-950
-
-interface Star {
-  x: number;
-  y: number;
-  radius: number;
-  alpha: number;
-}
-
-function generateStars(width: number, height: number): Star[] {
-  return Array.from({ length: STAR_COUNT }, () => ({
-    x: Math.random() * width,
-    y: Math.random() * height,
-    radius: Math.random() * 1.5 + 0.5,
-    alpha: Math.random() * 0.7 + 0.3,
-  }));
-}
-
-export async function initPixiApp(container: HTMLElement): Promise<Application> {
+export async function initPixiApp(
+  container: HTMLElement,
+): Promise<Application> {
   const app = new Application();
 
   await app.init({
-    background: BG_COLOR,
+    background: Canvas.background,
     resizeTo: container,
     antialias: true,
     resolution: window.devicePixelRatio || 1,
@@ -32,30 +25,41 @@ export async function initPixiApp(container: HTMLElement): Promise<Application> 
 
   container.appendChild(app.canvas);
 
-  const stars = generateStars(app.screen.width, app.screen.height);
-  const starGraphics = new Graphics();
-  drawStars(starGraphics, stars);
-  app.stage.addChild(starGraphics);
+  // Generate mock galaxy data (temporary — issue #31 replaces with Colyseus)
+  const galaxyData = generateMockGalaxy();
 
-  // Subtle twinkle animation
-  let elapsed = 0;
-  app.ticker.add((ticker) => {
-    elapsed += ticker.deltaTime * 0.02;
-    starGraphics.clear();
-    for (const star of stars) {
-      const flicker = 0.5 + 0.5 * Math.sin(elapsed + star.x * 0.01 + star.y * 0.01);
-      const alpha = star.alpha * (0.6 + 0.4 * flicker);
-      starGraphics.circle(star.x, star.y, star.radius);
-      starGraphics.fill({ color: 0xfafafa, alpha });
-    }
+  // Build the galaxy renderer
+  const galaxyRenderer = new GalaxyRenderer((sectorId) => {
+    console.log(`[GalaxyMap] Sector ${sectorId} clicked`);
+  });
+  galaxyRenderer.setGalaxyData(galaxyData);
+
+  // Compute galaxy extent for viewport sizing
+  const extent = galaxyRenderer.getGalaxyExtent();
+  const worldWidth = extent.maxX - extent.minX;
+  const worldHeight = extent.maxY - extent.minY;
+
+  // Find starting sector position for initial camera center
+  const startSector = galaxyData.sectors.get(galaxyData.currentSectorId);
+  const centerX = startSector?.x ?? 0;
+  const centerY = startSector?.y ?? 0;
+
+  // Create the pixi-viewport for pan/zoom camera
+  const viewport = createGalaxyViewport(app, {
+    worldWidth,
+    worldHeight,
+    centerX,
+    centerY,
   });
 
-  return app;
-}
+  viewport.addChild(galaxyRenderer);
+  app.stage.addChild(viewport);
 
-function drawStars(graphics: Graphics, stars: Star[]): void {
-  for (const star of stars) {
-    graphics.circle(star.x, star.y, star.radius);
-    graphics.fill({ color: 0xfafafa, alpha: star.alpha });
-  }
+  // Handle container resize
+  const resizeObserver = new ResizeObserver(() => {
+    resizeViewport(viewport, app.screen.width, app.screen.height);
+  });
+  resizeObserver.observe(container);
+
+  return app;
 }
