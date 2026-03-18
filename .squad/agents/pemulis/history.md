@@ -759,3 +759,20 @@ Turn-based gameplay in real-time multiplayer framework = hybrid model where disc
 **Blocker Status:** None remaining for Phase 1. Gately and client track ready to begin when server schemas stable.
 
 **Next:** Dispatch to issue #5 (Server scaffold). Pemulis can now implement GalaxyRoom and entity managers.
+
+## Learnings — Issue #5: Server Scaffold (2026-03-18)
+
+**What was built:**
+- Colyseus 0.17 server with `defineServer`/`defineRoom` pattern (the modern declarative API)
+- Express integration via `WebSocketTransport.getExpressApp()` (transport owns the Express instance)
+- GalaxyRoom using `GalaxyState` from `@void-market/shared` as room state
+- `/health` endpoint, `PORT` env var, `npm run dev` (tsx watch), `npm start` (compiled)
+
+**Technical notes:**
+- Colyseus 0.17 deprecates `this.setState()` — use `this.state = new State()` instead
+- `@colyseus/core` + `@colyseus/ws-transport` is the minimal install (avoid the `colyseus` meta-package which pulls redis, auth, playground, etc.)
+- Express 5 is the default now and works with ws-transport
+- `defineServer` takes an `express` callback for custom routes — clean separation
+- Room generic uses `Room<{ state: GalaxyState }>` pattern for type-safe state
+
+**Branch:** `squad/5-server-scaffold` → PR #58 → `dev`
