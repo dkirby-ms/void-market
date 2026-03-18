@@ -1,18 +1,33 @@
 /**
  * PixiApp — application entry point.
  * Initializes PixiJS 8, galaxy viewport, and the data-driven
- * galaxy renderer. Currently uses mock data (replaced by Colyseus
- * state sync in issue #31).
+ * galaxy renderer. The renderer starts empty — StateSync populates
+ * it once the Colyseus room state arrives.
  */
 import { Application } from "pixi.js";
 import { Canvas } from "@void-market/shared";
 import { GalaxyRenderer } from "./GalaxyRenderer.js";
 import { createGalaxyViewport, resizeViewport } from "./GalaxyViewport.js";
-import { generateMockGalaxy, generateMockShips } from "./mockGalaxyData.js";
+import type { Viewport } from "pixi-viewport";
+import type { SectorClickHandler } from "./SectorNode.js";
+
+/** Handle returned by initPixiApp for external wiring. */
+export interface PixiAppHandle {
+  app: Application;
+  galaxyRenderer: GalaxyRenderer;
+  /** Replace the sector-click callback (used to wire OptimisticMovement). */
+  setSectorClickHandler: (handler: SectorClickHandler) => void;
+  /** Re-center the viewport camera on the given world coordinates. */
+  recenterViewport: (cx: number, cy: number) => void;
+  /** Access the underlying viewport for resizing. */
+  viewport: Viewport;
+}
+
+const DEFAULT_WORLD_SIZE = 10_000;
 
 export async function initPixiApp(
   container: HTMLElement,
-): Promise<Application> {
+): Promise<PixiAppHandle> {
   const app = new Application();
 
   await app.init({
@@ -25,60 +40,43 @@ export async function initPixiApp(
 
   container.appendChild(app.canvas);
 
-  // Generate mock galaxy data (temporary — issue #31 replaces with Colyseus)
-  const galaxyData = generateMockGalaxy();
+  // Mutable click handler — updated after OptimisticMovement is created
+  let sectorClickHandler: SectorClickHandler | undefined;
 
-  // Build the galaxy renderer
   const galaxyRenderer = new GalaxyRenderer((sectorId) => {
-    console.log(`[GalaxyMap] Sector ${sectorId} clicked`);
+    sectorClickHandler?.(sectorId);
   });
-  galaxyRenderer.setGalaxyData(galaxyData);
 
-  // Add mock ships for visual testing
-  const mockShips = generateMockShips(galaxyData);
-  galaxyRenderer.addShips(mockShips);
-
-  // Drive ship animations on each frame
+  // Drive ship animations each frame
   app.ticker.add((ticker) => {
     galaxyRenderer.update(ticker.deltaMS / 1000);
   });
 
-  // Demo: animate the local player's ship between sectors every 3 seconds
-  let moveIndex = 0;
-  const demoSectors = [1, 42, 100, 250, 1];
-  setInterval(() => {
-    moveIndex = (moveIndex + 1) % demoSectors.length;
-    const nextSector = demoSectors[moveIndex];
-    galaxyRenderer.shipManager.moveShip("local-player", nextSector);
-    console.log(`[ShipDemo] Moving local player to sector ${nextSector}`);
-  }, 3000);
-
-  // Compute galaxy extent for viewport sizing
-  const extent = galaxyRenderer.getGalaxyExtent();
-  const worldWidth = extent.maxX - extent.minX;
-  const worldHeight = extent.maxY - extent.minY;
-
-  // Find starting sector position for initial camera center
-  const startSector = galaxyData.sectors.get(galaxyData.currentSectorId);
-  const centerX = startSector?.x ?? 0;
-  const centerY = startSector?.y ?? 0;
-
-  // Create the pixi-viewport for pan/zoom camera
+  // Create viewport with generous defaults (resized when galaxy data arrives)
   const viewport = createGalaxyViewport(app, {
-    worldWidth,
-    worldHeight,
-    centerX,
-    centerY,
+    worldWidth: DEFAULT_WORLD_SIZE,
+    worldHeight: DEFAULT_WORLD_SIZE,
+    centerX: 0,
+    centerY: 0,
   });
 
   viewport.addChild(galaxyRenderer);
   app.stage.addChild(viewport);
 
-  // Handle container resize
   const resizeObserver = new ResizeObserver(() => {
     resizeViewport(viewport, app.screen.width, app.screen.height);
   });
   resizeObserver.observe(container);
 
-  return app;
+  return {
+    app,
+    galaxyRenderer,
+    setSectorClickHandler: (handler) => {
+      sectorClickHandler = handler;
+    },
+    recenterViewport: (cx, cy) => {
+      viewport.moveCenter(cx, cy);
+    },
+    viewport,
+  };
 }
