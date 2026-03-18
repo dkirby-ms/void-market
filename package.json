@@ -10,7 +10,7 @@
     "client"
   ],
   "scripts": {
-    "build": "tsc --build",
+    "build": "tsc --build && npm run build --workspace=client",
     "lint": "npm run lint --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "test:coverage": "vitest run --coverage",

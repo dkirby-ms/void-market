@@ -5,13 +5,26 @@
   "type": "module",
   "main": "./dist/main.js",
   "scripts": {
-    "build": "tsc --build",
-    "clean": "tsc --build --clean",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist",
     "lint": "eslint src/",
     "test": "vitest run",
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@void-market/shared": "*"
+    "@void-market/shared": "*",
+    "colyseus.js": "^0.16.0",
+    "pixi.js": "^8.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.0.0",
+    "vite": "^6.0.0"
   }
 }
