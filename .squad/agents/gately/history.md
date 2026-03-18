@@ -1018,3 +1018,25 @@ Risk renderer rendering phase can now adopt this pattern for armies/territories.
 **Impact:** Project status is now visible in GitHub issues board. Milestones track phase progress. Dependency graph shows blocking relationships.
 
 **Reference:** `.squad/decisions.md` → "Track Project Plan as GitHub Issues" for label taxonomy and conventions.
+
+## Learnings
+
+### 2026-03-18: Client Scaffold (Issue #6)
+
+**What I built:**
+- Vite + React 18 + PixiJS 8 + Colyseus.js client scaffold
+- Hybrid rendering: PixiJS canvas (starfield) as background, React DOM overlay on top
+- Connection status badge (React component) showing Colyseus connection lifecycle
+- Vite dev server on port 5173 with proxy to server on 2567
+
+**Key technical decisions:**
+- Client tsconfig uses `moduleResolution: "bundler"` + `noEmit: true` (Vite handles bundling, not tsc)
+- Removed client from root `tsc --build` references; root build runs `tsc --build && npm run build --workspace=client`
+- ESLint switched from `projectService` to per-workspace `project` configs for monorepo compatibility
+- PixiJS canvas mounts via React ref to avoid lifecycle conflicts
+
+**Gotchas:**
+- TypeScript shadows `.tsx` files when `.ts` file with same name exists — must delete old `main.ts` before `main.tsx` will be discovered
+- ESLint `projectService: true` can't discover non-composite tsconfigs in a monorepo; explicit per-workspace `project` paths work reliably
+- `composite: false` in client tsconfig requires also setting `declaration: false` and `declarationMap: false` (inherited from root)
+- npm workspace installs can sometimes not persist package.json changes; always verify after install

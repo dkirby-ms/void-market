@@ -15,6 +15,6 @@
     "sourceMap": true,
     "composite": true
   },
-  "references": [{ "path": "shared" }, { "path": "server" }, { "path": "client" }],
+  "references": [{ "path": "shared" }, { "path": "server" }],
   "files": []
 }
