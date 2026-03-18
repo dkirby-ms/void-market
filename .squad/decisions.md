@@ -331,9 +331,103 @@ Added enums, constants, interfaces, Colyseus Schema base classes to @void-market
 
 ---
 
+### 2026-03-18: Colyseus 0.17 Server Pattern (Pemulis)
+**Status:** Implemented  
+**Owner:** Pemulis (Systems Dev)  
+**Issue:** #5  
+**PR:** #58
+
+Use Colyseus 0.17's `defineServer`/`defineRoom` declarative API. Install only `@colyseus/core` + `@colyseus/ws-transport` (minimal deps). All future rooms use `defineRoom(RoomClass)` pattern registered in `server/src/index.ts`.
+
+**Rationale:** `defineServer` is the recommended 0.17 API; minimal deps keep server lean until redis/auth/monitoring actually needed in later phases.
+
+**Impact:** All agents should use `defineRoom` for room definitions. Express routes go in the `express` callback.
+
+---
+
+### 2026-03-18: Client Build Pipeline (Gately)
+**Status:** Implemented  
+**Owner:** Gately (Client Dev)  
+**Issue:** #6  
+**PR:** #59
+
+Client workspace uses Vite for bundling. TypeScript configured with `noEmit: true` (type-checking only). Root `tsconfig.json` no longer references `client/` in `references` (only `shared`, `server`).
+
+**Key Changes:**
+- `client/tsconfig.json` — `noEmit: true`, `composite: false`, `moduleResolution: "bundler"`
+- Root build: `tsc --build && npm run build --workspace=client`
+- ESLint switched from `projectService: true` to per-workspace `project` paths (project service incompatible with non-composite tsconfigs)
+
+**Impact:** All agents aware that `npm run build` builds everything (shared + server via tsc, client via Vite). Client `npm run dev` starts Vite on :5173 with full HMR.
+
+---
+
+### 2026-03-18: CI Coverage Thresholds Non-Blocking (Marathe)
+**Status:** Approved  
+**Owner:** Marathe (DevOps)
+
+Coverage thresholds set to 80% but **do not gate** builds during Phase 0. Coverage reports generated and uploaded for visibility; only `npm run test` (without `--coverage`) gates merges.
+
+**Rationale:** Phase 0 scaffolding (schemas, enums) has low test coverage by design. Blocking on thresholds creates false failures. Revisit after Phase 1 ships.
+
+---
+
+### 2026-03-18: Tailwind CSS 4 + shadcn/ui Components (Gately)
+**Status:** Implemented  
+**Owner:** Gately (Client Dev)  
+**Issue:** #7  
+**PR:** #62
+
+Tailwind CSS 4 with `@tailwindcss/vite` plugin (listed before `@vitejs/plugin-react`). All 38 design system variables from DESIGN-SYSTEM.md mapped as CSS custom properties. 5 initial shadcn/ui components (Button, Card, Badge, Input, Label). Dark mode class-based (`class="dark"` on `<html>`).
+
+**Key Details:**
+- `@theme inline` bindings for 38 CSS variables
+- `cn()` utility at `client/src/lib/utils.ts` (clsx + tailwind-merge)
+- Radix UI primitives (20 packages) pre-installed
+- Components copy-paste pattern to `client/src/components/ui/`
+
+**Impact:** Design tokens accessible via CSS custom properties. Future components added by copying to `client/src/components/ui/`. React ESLint plugins deferred (ESLint 10 support pending).
+
+---
+
+### 2026-03-18: Dev Environment — Concurrent & Docker Compose (Marathe)
+**Status:** Implemented  
+**Owner:** Marathe (DevOps)  
+**Issue:** #8  
+**PR:** #61
+
+`npm run dev` starts Colyseus (:2567) + Vite (:5173) via `concurrently` with `-k` for clean shutdown. Docker Compose provides PostgreSQL 16-alpine + Redis 7-alpine with persistent named volumes. App runs natively (not containerized) for HMR performance.
+
+**Workflow:**
+- `docker compose up -d` — Start backing services
+- `npm run dev` — Start app with hot reload
+- `.env.example` documents `DATABASE_URL`, `REDIS_URL`, `PORT`
+
+**Impact:** Local dev is fast and convenient. Database/Redis ready for Phase 1 persistence code.
+
+---
+
+### 2026-03-18: Dockerfile Production Image (Marathe)
+**Status:** Implemented  
+**Owner:** Marathe (DevOps)  
+**Issue:** #11  
+**PR:** #60
+
+Multi-stage Dockerfile using `node:22-slim` (Debian-based, not Alpine). Production stage installs all workspace production deps via `npm ci --omit=dev`. Image includes curl (~5MB) for HEALTHCHECK.
+
+**Rationale:** npm workspaces + native modules more reliable on Debian (Alpine musl causes sporadic build failures). Full prod deps avoids fragile selective installs. curl required for Azure Container Apps health probes.
+
+**Critical Follow-Up:** Server must serve `client/dist/` as static files via Express. Add Express static middleware before Phase 1 production deploy.
+
+**Impact:** Container compatible with existing CI workflows and Azure Container Apps deployments.
+
+---
+
 ## Decision Merge History
 
 **2026-03-17:** Merged inbox decisions to canonical decisions.md. Deduplicated overlapping entries. Active decisions now consolidated in single source of truth.
+
+**2026-03-18:** Merged Wave 3 + Wave 4 Phase 0 decisions. Added 6 new decisions (Colyseus pattern, client build, coverage thresholds, Tailwind, dev environment, Dockerfile). Inbox files ready for deletion.
 
 **Inbox sources merged:**
 - `hal-galaxy-wars-architecture.md` → "Void Market Architecture Decisions"
@@ -341,14 +435,22 @@ Added enums, constants, interfaces, Colyseus Schema base classes to @void-market
 - `mario-uux-design-brief.md` → "UX Design Brief for Void Market"
 - `marathe-branching-strategy.md` → "Branching Strategy and CI/CD"
 - `hal-rename-void-market.md` → "Rename to Void Market"
+- `pemulis-server-scaffold.md` → "Colyseus 0.17 Server Pattern"
+- `gately-client-scaffold.md` → "Client Build Pipeline"
+- `marathe-ci-pipeline.md` → "CI Coverage Thresholds Non-Blocking"
+- `gately-shadcn-tailwind.md` → "Tailwind CSS 4 + shadcn/ui Components"
+- `marathe-dev-environment.md` → "Dev Environment — Concurrent & Docker Compose"
+- `marathe-dockerfile.md` → "Dockerfile Production Image"
 
 ---
 
 ## Related Documents
 
-- `.squad/log/2026-03-17-branching-and-rename.md` — Session summary
-- `.squad/orchestration-log/` — Agent work logs
+- `.squad/log/2026-03-18T001000Z-phase0-complete.md` — Phase 0 completion session log
+- `.squad/orchestration-log/` — Agent work logs (Wave 3 + Wave 4)
 - `docs/ARCHITECTURE.md` — Server architecture (Colyseus, rooms, database)
 - `docs/GAME-SYSTEMS.md` — Gameplay mechanics (turns, economy, alliances)
 - `docs/UX-BRIEF.md` — UI/UX design strategy
+- `docs/DESIGN-SYSTEM.md` — Design tokens and component library
 - `.github/workflows/` — CI/CD implementation
+
