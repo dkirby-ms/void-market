@@ -35,6 +35,7 @@ export interface TradeResultMessage {
   readonly commodity: string;
   readonly quantity: number;
   readonly totalPrice: number;
+  readonly profitLoss: number;
   readonly newCredits: number;
   readonly newStock: number;
   readonly error?: string;

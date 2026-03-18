@@ -3,7 +3,9 @@ import {
   GalaxyState,
   PlayerSchema,
   ShipSchema,
+  CommoditySchema,
   ShipClass,
+  Commodity,
   ActionType,
   CLIENT_MSG,
   SERVER_MSG,
@@ -14,6 +16,10 @@ import {
   TURN_COSTS,
   TURN_REGEN_INTERVAL_MS,
   SHIP_SPECS,
+  BASE_PRICES,
+  PRICE_VARIANCE_PCT,
+  RESTOCK_RATE,
+  SLOW_TICK_MS,
   type MoveMessage,
   type TradeMessage,
   type ErrorMessage,
@@ -45,6 +51,31 @@ export function _resetPlayerCounter(): void {
   playerCounter = 0;
 }
 
+/**
+ * Calculate dynamic price based on current stock relative to max stock.
+ * Buy (player buys from port):  low stock → higher price (scarcity premium)
+ * Sell (player sells to port):  low stock → lower price (inverse)
+ */
+export function calculatePrice(
+  commodity: CommoditySchema,
+  isBuying: boolean,
+): number {
+  const basePrice = BASE_PRICES[commodity.commodity as Commodity];
+  const stockRatio =
+    commodity.maxStock > 0 ? commodity.stock / commodity.maxStock : 0;
+
+  if (isBuying) {
+    return Math.max(
+      1,
+      Math.round(basePrice * (1 + PRICE_VARIANCE_PCT * (1 - stockRatio))),
+    );
+  }
+  return Math.max(
+    1,
+    Math.round(basePrice * (1 - PRICE_VARIANCE_PCT * (1 - stockRatio))),
+  );
+}
+
 // ── GalaxyRoom ───────────────────────────────────────────────────────────────
 
 /**
@@ -58,8 +89,6 @@ export function _resetPlayerCounter(): void {
  *  - Regenerate turns on a timer
  */
 export class GalaxyRoom extends Room<{ state: GalaxyState }> {
-  private turnRegenInterval: ReturnType<typeof setInterval> | undefined;
-
   onCreate(options: { seed?: number } = {}) {
     const seed = options.seed ?? Date.now();
     this.state = generateGalaxy(seed);
@@ -81,10 +110,15 @@ export class GalaxyRoom extends Room<{ state: GalaxyState }> {
       this.handleTrade(client, message);
     });
 
-    // ── Turn regeneration timer ──
-    this.turnRegenInterval = setInterval(() => {
+    // ── Turn regeneration timer (auto-cleaned by Colyseus clock) ──
+    this.clock.setInterval(() => {
       this.regenTurns();
     }, TURN_REGEN_INTERVAL_MS);
+
+    // ── Economy slow tick: port restocking ──
+    this.clock.setInterval(() => {
+      this.restockPorts();
+    }, SLOW_TICK_MS);
 
     console.log(
       `[GalaxyRoom] Created (roomId: ${this.roomId}, seed: ${seed}, sectors: ${this.state.sectors.size})`,
@@ -169,9 +203,6 @@ export class GalaxyRoom extends Room<{ state: GalaxyState }> {
   }
 
   onDispose() {
-    if (this.turnRegenInterval) {
-      clearInterval(this.turnRegenInterval);
-    }
     console.log(`[GalaxyRoom] Disposed (roomId: ${this.roomId})`);
   }
 
@@ -362,7 +393,8 @@ export class GalaxyRoom extends Room<{ state: GalaxyState }> {
         return;
       }
 
-      const totalPrice = qty * commoditySchema.buyPrice;
+      const unitPrice = calculatePrice(commoditySchema, true);
+      const totalPrice = qty * unitPrice;
       if (player.credits < totalPrice) {
         this.refundTurns(player, cost);
         this.sendError(
@@ -382,12 +414,15 @@ export class GalaxyRoom extends Room<{ state: GalaxyState }> {
         return;
       }
 
-      const actualPrice = actualQty * commoditySchema.buyPrice;
+      const actualPrice = actualQty * unitPrice;
 
       // Execute trade
       player.credits -= actualPrice;
       commoditySchema.stock -= actualQty;
       loadCargo(player.ship, message.commodity, actualQty);
+
+      // Update stored price after stock change
+      commoditySchema.buyPrice = calculatePrice(commoditySchema, true);
 
       const result: TradeResultMessage = {
         type: SERVER_MSG.TRADE_RESULT,
@@ -395,6 +430,7 @@ export class GalaxyRoom extends Room<{ state: GalaxyState }> {
         commodity: message.commodity,
         quantity: actualQty,
         totalPrice: actualPrice,
+        profitLoss: -actualPrice,
         newCredits: player.credits,
         newStock: commoditySchema.stock,
       };
@@ -423,11 +459,15 @@ export class GalaxyRoom extends Room<{ state: GalaxyState }> {
         return;
       }
 
-      const totalPrice = actualQty * commoditySchema.sellPrice;
+      const unitPrice = calculatePrice(commoditySchema, false);
+      const totalPrice = actualQty * unitPrice;
 
       // Execute trade
       player.credits += totalPrice;
       commoditySchema.stock += actualQty;
+
+      // Update stored price after stock change
+      commoditySchema.sellPrice = calculatePrice(commoditySchema, false);
 
       const result: TradeResultMessage = {
         type: SERVER_MSG.TRADE_RESULT,
@@ -435,6 +475,7 @@ export class GalaxyRoom extends Room<{ state: GalaxyState }> {
         commodity: message.commodity,
         quantity: actualQty,
         totalPrice,
+        profitLoss: totalPrice,
         newCredits: player.credits,
         newStock: commoditySchema.stock,
       };
@@ -492,6 +533,29 @@ export class GalaxyRoom extends Room<{ state: GalaxyState }> {
       if (client) {
         this.sendTurnUpdate(client, player);
       }
+    });
+  }
+
+  /** Restock ports: selling ports gain stock, buying ports drain stock. */
+  private restockPorts(): void {
+    this.state.sectors.forEach((sector) => {
+      const port = sector.port;
+      if (!port) return;
+
+      port.commodities.forEach((commodity) => {
+        if (commodity.portBuys) {
+          // Port buys: drain accumulated stock (port consumes goods)
+          commodity.stock = Math.max(0, commodity.stock - RESTOCK_RATE);
+          commodity.sellPrice = calculatePrice(commodity, false);
+        } else {
+          // Port sells: restock (port produces goods)
+          commodity.stock = Math.min(
+            commodity.maxStock,
+            commodity.stock + RESTOCK_RATE,
+          );
+          commodity.buyPrice = calculatePrice(commodity, true);
+        }
+      });
     });
   }
 

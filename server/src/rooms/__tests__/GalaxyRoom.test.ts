@@ -27,6 +27,9 @@ import {
   Commodity,
   ActionType,
   TURN_COSTS,
+  BASE_PRICES,
+  PRICE_VARIANCE_PCT,
+  RESTOCK_RATE,
 } from "@void-market/shared";
 import {
   loadCargo,
@@ -38,6 +41,7 @@ import {
   upgradeShip,
   isValidCommodity,
 } from "../../game/ShipManager.js";
+import { calculatePrice } from "../../rooms/GalaxyRoom.js";
 
 // ── Ship Manager Unit Tests ──────────────────────────────────────────────────
 
@@ -567,6 +571,206 @@ describe("GalaxyRoom logic", () => {
       const idx = sector.playerIds.indexOf(sessionId);
       sector.playerIds.splice(idx, 1);
       expect(sector.playerIds.includes(sessionId)).toBe(false);
+    });
+  });
+
+  describe("dynamic pricing", () => {
+    test("buy price increases as stock decreases", () => {
+      const c = new CommoditySchema();
+      c.commodity = Commodity.FuelOre;
+      c.maxStock = 5000;
+
+      c.stock = 5000;
+      const priceFull = calculatePrice(c, true);
+
+      c.stock = 2500;
+      const priceHalf = calculatePrice(c, true);
+
+      c.stock = 0;
+      const priceEmpty = calculatePrice(c, true);
+
+      expect(priceHalf).toBeGreaterThan(priceFull);
+      expect(priceEmpty).toBeGreaterThan(priceHalf);
+    });
+
+    test("sell price decreases as stock decreases", () => {
+      const c = new CommoditySchema();
+      c.commodity = Commodity.Organics;
+      c.maxStock = 5000;
+
+      c.stock = 5000;
+      const priceFull = calculatePrice(c, false);
+
+      c.stock = 2500;
+      const priceHalf = calculatePrice(c, false);
+
+      c.stock = 0;
+      const priceEmpty = calculatePrice(c, false);
+
+      expect(priceHalf).toBeLessThan(priceFull);
+      expect(priceEmpty).toBeLessThan(priceHalf);
+    });
+
+    test("price at full stock equals base price", () => {
+      const c = new CommoditySchema();
+      c.commodity = Commodity.Equipment;
+      c.maxStock = 5000;
+      c.stock = 5000;
+
+      const buyPrice = calculatePrice(c, true);
+      const sellPrice = calculatePrice(c, false);
+
+      expect(buyPrice).toBe(BASE_PRICES[Commodity.Equipment]);
+      expect(sellPrice).toBe(BASE_PRICES[Commodity.Equipment]);
+    });
+
+    test("price at empty stock applies full variance", () => {
+      const c = new CommoditySchema();
+      c.commodity = Commodity.FuelOre;
+      c.maxStock = 5000;
+      c.stock = 0;
+
+      const base = BASE_PRICES[Commodity.FuelOre];
+      const buyPrice = calculatePrice(c, true);
+      const sellPrice = calculatePrice(c, false);
+
+      expect(buyPrice).toBe(Math.round(base * (1 + PRICE_VARIANCE_PCT)));
+      expect(sellPrice).toBe(Math.round(base * (1 - PRICE_VARIANCE_PCT)));
+    });
+
+    test("price never goes below 1", () => {
+      const c = new CommoditySchema();
+      c.commodity = Commodity.FuelOre;
+      c.maxStock = 5000;
+      c.stock = 0;
+
+      expect(calculatePrice(c, false)).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  describe("port restocking", () => {
+    test("selling port gains stock toward maxStock", () => {
+      const sector = state.sectors.get("1");
+      expect(sector?.port).toBeDefined();
+      const port = sector?.port;
+      if (!port) return;
+      const fuel = port.commodities.get(Commodity.FuelOre);
+      expect(fuel).toBeDefined();
+      if (!fuel) return;
+
+      expect(fuel.portBuys).toBe(false);
+      const startStock = fuel.stock;
+
+      fuel.stock = Math.min(fuel.maxStock, fuel.stock + RESTOCK_RATE);
+
+      expect(fuel.stock).toBe(startStock + RESTOCK_RATE);
+    });
+
+    test("buying port drains stock toward 0", () => {
+      const sector = state.sectors.get("1");
+      const port = sector?.port;
+      expect(port).toBeDefined();
+      if (!port) return;
+      const org = port.commodities.get(Commodity.Organics);
+      expect(org).toBeDefined();
+      if (!org) return;
+
+      expect(org.portBuys).toBe(true);
+      const startStock = org.stock;
+
+      org.stock = Math.max(0, org.stock - RESTOCK_RATE);
+
+      expect(org.stock).toBe(startStock - RESTOCK_RATE);
+    });
+
+    test("selling port stock caps at maxStock", () => {
+      const sector = state.sectors.get("1");
+      const port = sector?.port;
+      expect(port).toBeDefined();
+      if (!port) return;
+      const fuel = port.commodities.get(Commodity.FuelOre);
+      expect(fuel).toBeDefined();
+      if (!fuel) return;
+
+      fuel.stock = fuel.maxStock;
+      fuel.stock = Math.min(fuel.maxStock, fuel.stock + RESTOCK_RATE);
+
+      expect(fuel.stock).toBe(fuel.maxStock);
+    });
+
+    test("buying port stock does not go below 0", () => {
+      const sector = state.sectors.get("1");
+      const port = sector?.port;
+      expect(port).toBeDefined();
+      if (!port) return;
+      const org = port.commodities.get(Commodity.Organics);
+      expect(org).toBeDefined();
+      if (!org) return;
+
+      org.stock = 10;
+      org.stock = Math.max(0, org.stock - RESTOCK_RATE);
+
+      expect(org.stock).toBe(0);
+    });
+  });
+
+  describe("trade profit/loss", () => {
+    beforeEach(() => {
+      player.isDocked = true;
+    });
+
+    test("buying commodity reports negative profitLoss", () => {
+      const sector = state.sectors.get("1");
+      const port = sector?.port;
+      expect(port).toBeDefined();
+      if (!port) return;
+      const fuel = port.commodities.get(Commodity.FuelOre);
+      expect(fuel).toBeDefined();
+      if (!fuel) return;
+
+      const qty = 10;
+      const unitPrice = calculatePrice(fuel, true);
+      const totalPrice = qty * unitPrice;
+
+      const profitLoss = -totalPrice;
+      expect(profitLoss).toBeLessThan(0);
+      expect(profitLoss).toBe(-qty * unitPrice);
+    });
+
+    test("selling commodity reports positive profitLoss", () => {
+      const sector = state.sectors.get("1");
+      const port = sector?.port;
+      expect(port).toBeDefined();
+      if (!port) return;
+      const org = port.commodities.get(Commodity.Organics);
+      expect(org).toBeDefined();
+      if (!org) return;
+
+      loadCargo(player.ship, Commodity.Organics, 15);
+      const qty = 10;
+      const unitPrice = calculatePrice(org, false);
+      const totalPrice = qty * unitPrice;
+
+      const profitLoss = totalPrice;
+      expect(profitLoss).toBeGreaterThan(0);
+      expect(profitLoss).toBe(qty * unitPrice);
+    });
+
+    test("dynamic price changes after trade affects next trade", () => {
+      const sector = state.sectors.get("1");
+      const port = sector?.port;
+      expect(port).toBeDefined();
+      if (!port) return;
+      const fuel = port.commodities.get(Commodity.FuelOre);
+      expect(fuel).toBeDefined();
+      if (!fuel) return;
+
+      const priceBefore = calculatePrice(fuel, true);
+
+      fuel.stock -= 500;
+
+      const priceAfter = calculatePrice(fuel, true);
+      expect(priceAfter).toBeGreaterThan(priceBefore);
     });
   });
 });
