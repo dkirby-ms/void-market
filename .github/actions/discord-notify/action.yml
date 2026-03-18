@@ -36,7 +36,7 @@ runs:
       run: |
         SHORT_SHA="${{ inputs.commit-sha }}"
         SHORT_SHA="${SHORT_SHA:0:7}"
-        
+
         curl -X POST "${{ inputs.webhook-url }}" \
           -H "Content-Type: application/json" \
           -d @- <<DISCORD_EOF
@@ -63,7 +63,7 @@ runs:
       run: |
         SHORT_SHA="${{ inputs.commit-sha }}"
         SHORT_SHA="${SHORT_SHA:0:7}"
-        
+
         curl -X POST "${{ inputs.webhook-url }}" \
           -H "Content-Type: application/json" \
           -d @- <<DISCORD_EOF

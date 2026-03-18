@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 permissions:
   id-token: write
@@ -72,10 +72,10 @@ jobs:
         run: |
           HEALTH_URL="${{ vars.CONTAINER_APP_FQDN }}/health"
           echo "Checking health endpoint: $HEALTH_URL"
-          
+
           MAX_ATTEMPTS=10
           ATTEMPT=0
-          
+
           while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
             if curl -f -s "$HEALTH_URL" | grep -q '"status":"ok"'; then
               echo "✓ Health check passed"
@@ -85,7 +85,7 @@ jobs:
             echo "Health check attempt $ATTEMPT/$MAX_ATTEMPTS failed, retrying in 5s..."
             sleep 5
           done
-          
+
           echo "✗ Health check failed after $MAX_ATTEMPTS attempts"
           exit 1
 

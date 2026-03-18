@@ -877,3 +877,29 @@ permissions:
 **Impact:** Project status is now visible in GitHub issues board. Milestones track phase progress. Dependency graph shows blocking relationships.
 
 **Reference:** `.squad/decisions.md` → "Track Project Plan as GitHub Issues" for label taxonomy and conventions.
+
+### 2026-03-18: ESLint Flat Config + Prettier Setup (#10)
+
+**ESLint Config (eslint.config.js):**
+- ESLint 10 with typescript-eslint `strictTypeChecked` + `stylisticTypeChecked`
+- `projectService: true` for type-aware linting across all workspaces
+- `ignoreProperties: true` on `no-inferrable-types` — required for Colyseus `@type` decorators
+- `allowNumber: true` on `restrict-template-expressions` — numbers in template literals are idiomatic TS
+- Test files (`**/*.test.ts`, `**/__tests__/**`) get `no-confusing-void-expression` off
+- Client workspace prepped for React plugin (blocked: eslint-plugin-react only supports ESLint ≤9.7)
+- Global ignores: dist/, node_modules/, .squad/, docs/, infra/, *.js (except eslint.config.js)
+
+**Prettier Config (.prettierrc):**
+- Double quotes, semicolons, trailing commas, 2-space indent, 100-char width, LF endings
+
+**Scripts:**
+- Each workspace: `"lint": "eslint src/"`
+- Root: `"format": "prettier --write ."`, `"format:check": "prettier --check ."`
+
+**Key Learnings:**
+- ESLint 10 is current but React plugins lag behind (max ESLint 9.7 support as of 2026-03)
+- Colyseus Schema `@type` decorators require explicit type annotations — must set `ignoreProperties: true`
+- Prettier reformatted YAML workflows and markdown — expected, but verify CI files still parse correctly
+- `coverage/` was missing from `.gitignore` — added as housekeeping
+
+**PR:** #55 → `dev`

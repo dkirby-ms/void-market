@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Target environment'
+        description: "Target environment"
         required: true
         type: choice
         options:
@@ -12,11 +12,11 @@ on:
           - uat
           - prod
       postgres_admin_password:
-        description: 'PostgreSQL admin password (leave empty to use existing)'
+        description: "PostgreSQL admin password (leave empty to use existing)"
         required: false
         type: string
       container_app_env_resource_id:
-        description: 'Existing Container Apps Environment resource ID to reuse (optional)'
+        description: "Existing Container Apps Environment resource ID to reuse (optional)"
         required: false
         type: string
 
