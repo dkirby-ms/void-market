@@ -35,6 +35,15 @@
 
 ## Learnings
 
+### 2026-03-17: PR #68 — Galaxy Map PixiJS Renderer (#29)
+
+- **GalaxyRenderer** is fully data-driven — accepts `GalaxyData` (plain interfaces mirroring Colyseus schemas), renders sectors as `SectorNode` instances and warp connections as batched `Graphics` lines.
+- **pixi-viewport** works with PixiJS 8 for drag-pan and scroll-zoom. Key config: `clampZoom` for limits, `decelerate` for smooth stop, `wheel({ smooth: 5 })` for smooth zoom.
+- **Import paths:** Shared package only exports from barrel (`@void-market/shared`), not subpaths.
+- **ESLint strictness:** Arrow wrappers needed for event handlers; template literals needed for string concatenation with numbers.
+- **Container culling:** `cullable = true` on parent and children skips render calls for off-screen nodes.
+- **Mock data:** Seeded RNG ensures deterministic placement. Nearest-neighbor warp topology. ~40% port density.
+
 ### 2026-03-16: PR #122 Final Approval — Head-to-Head Mode Merged
 
 - **Decisions merged:** `gately-head-to-head.md` and `gately-turn-indicator.md` now in `.squad/decisions.md`
