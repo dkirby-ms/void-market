@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express from "express";
 import { defineServer, defineRoom } from "@colyseus/core";
 import { WebSocketTransport } from "@colyseus/ws-transport";

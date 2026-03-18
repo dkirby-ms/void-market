@@ -18,6 +18,7 @@
     "@colyseus/ws-transport": "^0.17.9",
     "@void-market/shared": "*",
     "bcrypt": "^6.0.0",
+    "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "node-pg-migrate": "^8.0.4",

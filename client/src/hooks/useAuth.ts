@@ -47,7 +47,7 @@ async function apiFetch(
 }
 
 interface DevTokenResponse {
-  token: string;
+  accessToken: string;
   user: { id: string; username: string };
 }
 
@@ -64,8 +64,8 @@ async function tryDevAutoLogin(): Promise<DevTokenResponse | null> {
     if (!res.ok) return null;
     const body = (await res.json()) as Record<string, unknown>;
     const user = body.user as { id?: string; username?: string } | undefined;
-    if (typeof body.token === "string" && user?.id && user.username) {
-      return { token: body.token, user: { id: user.id, username: user.username } };
+    if (typeof body.accessToken === "string" && user?.id && user.username) {
+      return { accessToken: body.accessToken, user: { id: user.id, username: user.username } };
     }
     return null;
   } catch {
@@ -113,7 +113,7 @@ export function useAuth(): UseAuth {
       if (import.meta.env.DEV) {
         const devResult = await tryDevAutoLogin();
         if (devResult) {
-          persist(devResult.token, "dev-refresh-placeholder");
+          persist(devResult.accessToken, "dev-refresh-placeholder");
           setUser(devResult.user);
           setIsLoading(false);
           return;
