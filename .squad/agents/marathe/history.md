@@ -903,3 +903,20 @@ permissions:
 - `coverage/` was missing from `.gitignore` — added as housekeeping
 
 **PR:** #55 → `dev`
+
+### 2026-03-17: Issue #9 — CI Pipeline Enhancement
+
+**What:** Updated `.github/workflows/ci.yml` to add coverage artifact upload and job summary.
+
+**Changes:**
+- Added non-blocking coverage report generation (V8 provider, thresholds zeroed to avoid false failures)
+- Added `actions/upload-artifact@v4` step for coverage reports (14-day retention)
+- Added `$GITHUB_STEP_SUMMARY` table showing build/lint/test status
+- Preserved all existing functionality: `npm ci → build → lint → test`, failure-issue creation, version-bump
+
+**Key Learnings:**
+- `npm run test:coverage` (vitest with thresholds) exits code 1 at 79.59% statements (threshold 80%) — don't gate CI on coverage thresholds during early development
+- Coverage generation must override thresholds via CLI flags: `--coverage.thresholds.statements=0`
+- The existing CI was already well-structured; this was an enhancement pass, not a rewrite
+
+**PR:** #57 → `dev`

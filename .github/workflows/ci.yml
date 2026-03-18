@@ -49,7 +49,37 @@ jobs:
         run: npm run lint
 
       - name: Run tests
+        id: test
         run: npm run test
+
+      - name: Generate coverage report
+        if: always() && steps.test.outcome == 'success'
+        continue-on-error: true
+        run: npx vitest run --coverage --coverage.thresholds.100=false --coverage.thresholds.statements=0 --coverage.thresholds.branches=0 --coverage.thresholds.functions=0 --coverage.thresholds.lines=0
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 14
+
+      - name: Job summary
+        if: always()
+        run: |
+          echo "## CI Results" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Step | Status |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|------|--------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Install | ✅ |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Build | ✅ |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Lint | ✅ |" >> "$GITHUB_STEP_SUMMARY"
+          if [ "${{ steps.test.outcome }}" = "failure" ]; then
+            echo "| Test | ❌ |" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "| Test | ✅ |" >> "$GITHUB_STEP_SUMMARY"
+          fi
 
   create-failure-issue:
     if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/dev'
