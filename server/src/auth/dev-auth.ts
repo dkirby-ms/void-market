@@ -10,13 +10,12 @@ import { generateToken, generateRefreshToken } from "./jwt.js";
 
 // ── Single flag ──────────────────────────────────────────────────────────────
 
-const _enabled =
-  process.env.NODE_ENV !== "production" &&
-  process.env.DEV_AUTH_BYPASS === "true";
-
-/** True only when dev auth bypass is active. */
+/** True only when dev auth bypass is active. Reads env at call time. */
 export function isDevAuthEnabled(): boolean {
-  return _enabled;
+  return (
+    process.env.NODE_ENV !== "production" &&
+    process.env.DEV_AUTH_BYPASS === "true"
+  );
 }
 
 // ── Dev user identity (deterministic, no DB required) ────────────────────────
@@ -47,7 +46,7 @@ export function generateDevTokens(): {
  * Only mounted when dev auth bypass is enabled.
  */
 export function devTokenHandler(_req: Request, res: Response): void {
-  if (!_enabled) {
+  if (!isDevAuthEnabled()) {
     res.status(404).json({ error: "Not found" });
     return;
   }
