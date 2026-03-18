@@ -832,3 +832,12 @@ Turn-based gameplay in real-time multiplayer framework = hybrid model where disc
 - **Env override pattern:** `envInt`/`envFloat` helpers with `typeof process === "undefined"` guard for browser safety. All env vars use `VM_` prefix to avoid collisions.
 - **Ship spec corrections:** Scout cargo = 25 (not 50), Merchant cargo = 100 (not 300), Merchant speed = 1 (slow, not 2). Aligned to team decisions doc.
 - **PR #64** → `dev` branch. Closes #13, #14, #15.
+
+### 2026-03-18: Procedural galaxy generator (#18)
+- **Algorithm:** 4-phase graph construction — (1) grid-with-jitter positions, (2) random spanning tree for connectivity, (3) edge augmentation for MIN/MAX warp constraints, (4) BFS repair safety net. Positions normalized to 0–10000 range for rendering.
+- **Seeded RNG:** Mulberry32 PRNG — pure integer arithmetic, no external dependencies, deterministic across platforms. Same seed always produces the same galaxy.
+- **Array-indexed adjacency:** Used 1-based arrays (`AdjList = Set<number>[]`) instead of `Map<number, Set<number>>` to avoid non-null assertions that violate `@typescript-eslint/no-non-null-assertion` lint rule.
+- **Port placement:** ~PORT_DENSITY (60%) with guaranteed SBB/BSB/BBS/SSB representation. 80% primary types, 20% any type from PORT_CLASS_CODES for variety.
+- **Performance:** ~250ms for 500 sectors including O(n²) nearest-neighbor precomputation. Well under 1s target.
+- **GalaxyRoom integration:** `onCreate()` accepts optional `{ seed }` in room options. Falls back to `Date.now()` for non-deterministic sessions.
+- **PR #70** → `dev` branch. Closes #18.
