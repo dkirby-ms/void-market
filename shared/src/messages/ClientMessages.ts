@@ -13,6 +13,7 @@ export const CLIENT_MSG = {
   UNDOCK: "undock",
   SECTOR_SCAN: "sector_scan",
   PORT_QUERY: "port_query",
+  UPGRADE_SHIP: "upgrade_ship",
 } as const;
 
 export type ClientMessageType = (typeof CLIENT_MSG)[keyof typeof CLIENT_MSG];
@@ -56,6 +57,12 @@ export interface PortQueryMessage {
   readonly portId: string;
 }
 
+/** Request to upgrade the player's ship to a new class. */
+export interface UpgradeShipMessage {
+  readonly type: typeof CLIENT_MSG.UPGRADE_SHIP;
+  readonly targetShipClass: string;
+}
+
 // ── Discriminated Union ──────────────────────────────────────────────────────
 
 /** Union of all client→server messages. */
@@ -65,4 +72,5 @@ export type ClientMessage =
   | DockMessage
   | UndockMessage
   | SectorScanMessage
-  | PortQueryMessage;
+  | PortQueryMessage
+  | UpgradeShipMessage;

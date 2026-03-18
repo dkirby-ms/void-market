@@ -13,6 +13,7 @@ export {
   type UndockMessage,
   type SectorScanMessage,
   type PortQueryMessage,
+  type UpgradeShipMessage,
   type ClientMessage,
 } from "./ClientMessages.js";
 

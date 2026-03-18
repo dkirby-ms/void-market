@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { MAX_TURN_BANK } from "@void-market/shared";
 import { Badge } from "./ui/badge.js";
+import { ShipPanel } from "./ShipPanel.js";
 import type { PlayerSnapshot } from "../hooks/useGameState.js";
 
 // ── Turn color thresholds ───────────────────────────────────────────────────
@@ -29,6 +30,8 @@ interface HUDProps {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export function HUD({ player, currentSectorId }: HUDProps): React.JSX.Element | null {
+  const [shipPanelOpen, setShipPanelOpen] = useState(false);
+
   if (!player) return null;
 
   const turnsMax = player.turnsMax || MAX_TURN_BANK;
@@ -111,6 +114,35 @@ export function HUD({ player, currentSectorId }: HUDProps): React.JSX.Element | 
           </span>
         </div>
       )}
+
+      {/* Ship panel toggle */}
+      <button
+        onClick={() => { setShipPanelOpen(true); }}
+        className="ml-auto p-1.5 rounded text-[var(--vm-neutral-400)] hover:text-[var(--vm-primary-light)] hover:bg-[var(--vm-neutral-800)] transition-colors"
+        aria-label="Open ship status"
+        title="Ship Status"
+      >
+        <svg
+          className="w-4 h-4"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2" />
+          <path d="M12 2L2 20h20L12 2Z" />
+          <path d="M12 10v4" />
+        </svg>
+      </button>
+
+      {/* Ship status panel */}
+      <ShipPanel
+        player={player}
+        open={shipPanelOpen}
+        onClose={() => { setShipPanelOpen(false); }}
+      />
     </div>
   );
 }

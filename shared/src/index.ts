@@ -87,6 +87,7 @@ export type {
   UndockMessage,
   SectorScanMessage,
   PortQueryMessage,
+  UpgradeShipMessage,
   ClientMessage,
   ServerMessageType,
   ErrorMessage,
