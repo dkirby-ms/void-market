@@ -17,10 +17,13 @@
     "@colyseus/core": "^0.17.39",
     "@colyseus/ws-transport": "^0.17.9",
     "@void-market/shared": "*",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "node-pg-migrate": "^8.0.4",
+    "pg": "^8.20.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
+    "@types/pg": "^8.18.0",
     "tsx": "^4.21.0"
   }
 }
