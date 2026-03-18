@@ -12,6 +12,7 @@ import type {
   SectorSchema,
   PortSchema,
   CommoditySchema,
+  CargoSchema,
 } from "@void-market/shared";
 import {
   subscribeToRoom,
@@ -22,6 +23,11 @@ import type { SectorData, PortData } from "../game/mockGalaxyData.js";
 
 // ── Plain data snapshots for React ──────────────────────────────────────────
 
+export interface CargoEntry {
+  commodity: string;
+  quantity: number;
+}
+
 export interface PlayerSnapshot {
   playerId: string;
   displayName: string;
@@ -30,8 +36,11 @@ export interface PlayerSnapshot {
   turnsMax: number;
   currentSectorId: number;
   isDocked: boolean;
+  shipClass: string;
+  shipSpeed: number;
   cargoHolds: number;
   maxCargoHolds: number;
+  cargo: CargoEntry[];
 }
 
 export interface CommoditySnapshot {
@@ -64,6 +73,12 @@ export interface GameState {
 // ── Schema → snapshot converters ────────────────────────────────────────────
 
 function playerToSnapshot(p: PlayerSchema): PlayerSnapshot {
+  const cargo: CargoEntry[] = [];
+  (p.ship.cargo as unknown as { forEach(cb: (v: CargoSchema) => void): void }).forEach(
+    (c: CargoSchema) => {
+      cargo.push({ commodity: c.commodity, quantity: c.quantity });
+    },
+  );
   return {
     playerId: p.playerId,
     displayName: p.displayName,
@@ -72,8 +87,11 @@ function playerToSnapshot(p: PlayerSchema): PlayerSnapshot {
     turnsMax: p.turnsMax,
     currentSectorId: p.currentSectorId,
     isDocked: p.isDocked,
+    shipClass: p.ship.shipClass,
+    shipSpeed: p.ship.speed,
     cargoHolds: p.ship.cargoHolds,
     maxCargoHolds: p.ship.maxCargoHolds,
+    cargo,
   };
 }
 

@@ -3,6 +3,7 @@ import { AuthScreen } from "./components/AuthScreen.js";
 import { ConnectionStatusBadge } from "./components/ConnectionStatusBadge.js";
 import { HUD } from "./components/HUD.js";
 import { SectorDetail } from "./components/SectorDetail.js";
+import { TradingPanel } from "./components/TradingPanel.js";
 import { useAuth } from "./hooks/useAuth.js";
 import { useGameState } from "./hooks/useGameState.js";
 import type { SectorSnapshot } from "./hooks/useGameState.js";
@@ -164,7 +165,20 @@ export function App(): React.JSX.Element {
 
       <ConnectionStatusBadge />
 
-      {selectedSector && (
+      {/* Trading panel when docked at a port */}
+      {gameState.currentPlayer?.isDocked &&
+        gameState.currentSector?.portDetail && (
+          <TradingPanel
+            player={gameState.currentPlayer}
+            port={gameState.currentSector.portDetail}
+            onClose={() => {
+              /* panel stays open while docked; undock closes it */
+            }}
+          />
+        )}
+
+      {/* Sector detail panel (hidden when trading) */}
+      {selectedSector && !gameState.currentPlayer?.isDocked && (
         <SectorDetail
           sector={selectedSector}
           player={gameState.currentPlayer}
