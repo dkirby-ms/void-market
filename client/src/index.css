@@ -80,6 +80,67 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(0.269 0 0);
   --sidebar-ring: oklch(0.439 0 0);
+
+  /* ── Void Market game tokens ────────────────────────────────── */
+
+  /* Semantic status */
+  --vm-success: #22C55E;
+  --vm-warning: #F59E0B;
+  --vm-danger: #EF4444;
+  --vm-info: #8B5CF6;
+
+  /* Accent / primary (violet) */
+  --vm-accent: #8B5CF6;
+  --vm-accent-light: #A78BFA;
+  --vm-accent-dark: #7C3AED;
+
+  /* Resource commodity colors */
+  --vm-fuel-ore: #F59E0B;
+  --vm-fuel-ore-light: #FBBF24;
+  --vm-organics: #10B981;
+  --vm-organics-light: #34D399;
+  --vm-equipment: #0EA5E9;
+  --vm-equipment-light: #38BDF8;
+  --vm-credits: #EAB308;
+  --vm-credits-light: #FACC15;
+  --vm-exotic: #A855F7;
+  --vm-exotic-light: #C084FC;
+
+  /* Player / faction identification */
+  --vm-player-1: #EF4444;
+  --vm-player-2: #3B82F6;
+  --vm-player-3: #22C55E;
+  --vm-player-4: #F59E0B;
+  --vm-player-5: #A855F7;
+  --vm-player-6: #06B6D4;
+  --vm-neutral: #3F3F46;
+
+  /* Surface layers */
+  --vm-surface: #18181B;
+  --vm-surface-raised: #27272A;
+
+  /* Glass-morphism */
+  --vm-glass-bg: rgba(24, 24, 27, 0.8);
+  --vm-glass-border: #3F3F46;
+  --vm-glass-blur: 8px;
+
+  /* Typography */
+  --vm-font-xs: 0.75rem;
+  --vm-font-sm: 0.875rem;
+  --vm-font-base: 1rem;
+  --vm-font-lg: 1.125rem;
+  --vm-font-xl: 1.25rem;
+  --vm-font-2xl: 1.5rem;
+
+  /* Spacing (8 px grid) */
+  --vm-space-1: 0.125rem;
+  --vm-space-2: 0.25rem;
+  --vm-space-4: 0.5rem;
+  --vm-space-8: 1rem;
+  --vm-space-12: 1.5rem;
+  --vm-space-16: 2rem;
+  --vm-space-24: 3rem;
+  --vm-space-32: 4rem;
 }
 
 @theme inline {
