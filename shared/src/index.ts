@@ -23,9 +23,15 @@ export {
   STARTING_CREDITS,
   BASE_PRICES,
   MAX_PORT_STOCK,
+  PRICE_VARIANCE_PCT,
+  RESTOCK_RATE,
+  PORT_CLASS_DEFS,
+  PORT_CLASS_CODES,
   DEFAULT_SECTOR_COUNT,
+  MIN_WARPS_PER_SECTOR,
   MAX_WARPS_PER_SECTOR,
   STARTING_SECTOR_ID,
+  PORT_DENSITY,
   SHIP_SPECS,
   FAST_TICK_MS,
   SLOW_TICK_MS,
@@ -36,7 +42,7 @@ export {
   WAR_DECLARATION_COST,
   MIN_WAR_DURATION_MS,
 } from "./constants.js";
-export type { ShipSpec } from "./constants.js";
+export type { ShipSpec, PortClassDef } from "./constants.js";
 
 // Types (pure interfaces — no runtime)
 export type {
@@ -58,9 +64,36 @@ export type {
 
 // Colyseus Schema classes
 export {
-  PlayerSchema,
+  CargoSchema,
+  CommoditySchema,
   ShipSchema,
   PortSchema,
+  PlayerSchema,
   SectorSchema,
   GalaxyState,
-} from "./schemas.js";
+} from "./schemas/index.js";
+
+// Message protocol types
+export {
+  CLIENT_MSG,
+  SERVER_MSG,
+} from "./messages/index.js";
+export type {
+  ClientMessageType,
+  MoveMessage,
+  TradeMessage,
+  DockMessage,
+  UndockMessage,
+  SectorScanMessage,
+  PortQueryMessage,
+  ClientMessage,
+  ServerMessageType,
+  ErrorMessage,
+  TradeResultMessage,
+  SystemMessage,
+  PlayerJoinedMessage,
+  PlayerLeftMessage,
+  SectorEnteredMessage,
+  TurnUpdateMessage,
+  ServerMessage,
+} from "./messages/index.js";
