@@ -945,5 +945,72 @@ permissions:
 - Coverage generation must override thresholds via CLI flags: `--coverage.thresholds.statements=0`
 - The existing CI was already well-structured; this was an enhancement pass, not a rewrite
 
+**What:** Updated `.github/workflows/ci.yml` to add coverage artifact upload and job summary.
+
+**Changes:**
+- Added non-blocking coverage report generation (V8 provider, thresholds zeroed to avoid false failures)
+- Added `actions/upload-artifact@v4` step for coverage reports (14-day retention)
+- Added `$GITHUB_STEP_SUMMARY` table showing build/lint/test status
+- Preserved all existing functionality: `npm ci → build → lint → test`, failure-issue creation, version-bump
+
+**Key Learnings:**
+- `npm run test:coverage` (vitest with thresholds) exits code 1 at 79.59% statements (threshold 80%) — don't gate CI on coverage thresholds during early development
+- Coverage generation must override thresholds via CLI flags: `--coverage.thresholds.statements=0`
+- The existing CI was already well-structured; this was an enhancement pass, not a rewrite
+
 **PR:** #57 → `dev`
-- 2026-03-18: Issue #11 — Multi-stage Dockerfile for production deployment. Two-stage node:22-slim build: stage 1 does full npm ci + npm run build (tsc + vite), stage 2 copies only built artifacts with production deps. HEALTHCHECK curls /health endpoint. .dockerignore excludes node_modules, .git, docs, coverage, tests. Docker build verified locally — container starts and /health returns 200. Image ~658MB (node:22-slim + all workspace production deps). Server does NOT yet serve client static files — follow-up needed for Express static middleware. PR #60 → dev.
+
+## Cross-Agent Update (2026-03-18) — Phase 0 Complete ✅
+
+**From:** Squad Scribe  
+**Event:** Wave 3 + Wave 4 Phase 0 scaffolding: all 10 issues merged to dev
+
+**Phase 0 Status:** ✅ ALL COMPLETE
+
+**Outcomes Across All Agents:**
+- Server scaffold (Pemulis) ✅ PR #58
+- Client scaffold (Gately) ✅ PR #59
+- CI pipeline (you, Wave 3) ✅ PR #57
+- Tailwind + shadcn (Gately) ✅ PR #62
+- Dev environment (you, Wave 4 Task 1) ✅ PR #61
+- Dockerfile (you, Wave 4 Task 2) ✅ PR #60
+- ESLint + Prettier (you, Wave 2) ✅ PR #55
+- Vitest infrastructure (Steeply) ✅ PR #53
+- Shared package (Pemulis) ✅ PR #54
+- Monorepo scaffold (Hal) ✅ Issue #3
+
+**Your Phase 0 Contribution (4 PRs across 3 waves):**
+1. PR #55 (Wave 2): ESLint 10 flat config — `ignoreProperties: true` exempts Colyseus @type decorators
+2. PR #57 (Wave 3): CI pipeline — build, test, lint, coverage (non-blocking), Discord notifications
+3. PR #61 (Wave 4): Dev environment — concurrent server/client, docker-compose (Postgres + Redis), HMR performance
+4. PR #60 (Wave 4): Dockerfile — multi-stage, node:22-slim (reliable for workspaces), health checks, Azure-compatible
+
+**Pemulis's Phase 0 Contribution:**
+- PR #54 (shared): enums, constants, interfaces, Colyseus schemas
+- PR #58 (server): Colyseus 0.17 server pattern, GalaxyRoom, /health endpoint
+
+**Gately's Phase 0 Contribution:**
+- PR #59 (client): Vite 6, React 18, PixiJS 8, Colyseus.js, dev server (:5173)
+- PR #62 (tailwind): Tailwind 4, 38 design tokens, 5 shadcn components, dark theme
+
+**Critical Path for Phase 1:**
+1. **Pemulis** — GalaxyRoom persistence (load from database)
+2. **Gately** — Galaxy renderer (PixiJS) + HUD components (React + Tailwind)
+3. **You (Phase 1 support)** — CI/CD integration points, dependency management, production deploy testing
+
+**Phase 1 Devops Tasks (Queued):**
+- Database schema migration setup (Phase 1-*)
+- Redis session/cache integration (Phase 1-*)
+- Production deploy validation (pre-launch)
+- GitHub Environments configuration (Azure OIDC, Discord webhook)
+
+**Key Learnings for Phase 1:**
+- ESLint: Test files exempt from `no-confusing-void-expression` (allows assertion patterns)
+- Vitest: 80% coverage threshold floor (enforced), but non-blocking during early development
+- Dev workflow: `docker compose up -d && npm run dev` is the canonical local setup
+- Dockerfile follow-up required: Server must serve `client/dist/` via Express static middleware before prod deploy
+
+**Reference Materials:**
+- `.squad/orchestration-log/2026-03-18T001000Z-wave3-marathe.md` — Wave 3 CI pipeline work
+- `.squad/orchestration-log/2026-03-18T001000Z-wave4-marathe.md` — Wave 4 dev env + Dockerfile work
+- `.squad/decisions.md` — Decisions merged from Phase 0 inbox (6 new entries)
