@@ -821,3 +821,14 @@ Turn-based gameplay in real-time multiplayer framework = hybrid model where disc
 **Next Phase 1 Task:** Issue #13 (Shared schemas revision). Refine game state interfaces based on trading loop requirements before Phase 1 dev begins.
 
 **Orchestration Log:** `.squad/orchestration-log/2026-03-18T001000Z-wave{3,4}-*.md` for full details.
+
+## Learnings
+
+### 2026-03-18: Shared schemas, constants, and messages (#13, #14, #15)
+- **Schema directory structure:** Moved from single `schemas.ts` to `shared/src/schemas/` with one file per class. Keeps `schemas.ts` as backward-compatible re-export shim. Same pattern for messages → `shared/src/messages/`.
+- **Colyseus v4 compact types:** Used `uint16` for sector IDs and turn counts (max 65535, sufficient for 500 sectors and 2000 turn bank), `uint32` for stock/prices, `float64` for credits and timestamps, `float32` for coordinates. Saves significant bandwidth vs `"number"` (which defaults to float64).
+- **Port class as string code:** Chose `"SBB"` string notation over numeric PortClass enum for `PortSchema.portClass`. More readable, self-documenting, and maps directly to `PORT_CLASS_DEFS` constant. The numeric `PortClass` enum in enums.ts is preserved but the schema uses string codes.
+- **Nested ship schema:** `PlayerSchema.ship` is a nested `ShipSchema` rather than a reference. This gives Colyseus automatic delta sync on ship state changes without extra message plumbing.
+- **Env override pattern:** `envInt`/`envFloat` helpers with `typeof process === "undefined"` guard for browser safety. All env vars use `VM_` prefix to avoid collisions.
+- **Ship spec corrections:** Scout cargo = 25 (not 50), Merchant cargo = 100 (not 300), Merchant speed = 1 (slow, not 2). Aligned to team decisions doc.
+- **PR #64** → `dev` branch. Closes #13, #14, #15.
