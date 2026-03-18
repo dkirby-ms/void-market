@@ -2,6 +2,63 @@
 
 ## Active Decisions
 
+### 2026-03-18: Schema Design Decisions (Pemulis #13, #14, #15)
+**Status:** Implemented (PR #64)  
+**Owner:** Pemulis (Server Architecture)
+
+**Core Decisions:**
+
+1. **Port class uses string codes, not numeric enum**  
+   Port class is stored as string ("SBB", "BSB", etc.) rather than numeric enum. Self-documenting, maps directly to `PORT_CLASS_DEFS`, easier to debug in network traces. The numeric `PortClass` enum remains in `enums.ts` for any code that needs it.
+
+2. **Nested ShipSchema on PlayerSchema**  
+   `PlayerSchema.ship` is a nested `ShipSchema` instance, not separate MapSchema reference. Colyseus delta-syncs nested schemas automatically; ship state changes propagate without extra message handling.
+
+3. **Commodity tracking via MapSchema<CommoditySchema>**  
+   `PortSchema.commodities` is `MapSchema<CommoditySchema>` keyed by commodity name string. More extensible than flat fields; when Exotic Matter is added in Phase 2+, just add a new key — no schema migration needed.
+
+4. **Sector playerIds as ArraySchema<string> vs nested players**  
+   `SectorSchema.playerIds` stores string IDs, not nested `PlayerSchema`. Avoids double-syncing player data (already in `GalaxyState.players`). Sector just needs to know who's present for rendering.
+
+5. **Ship specs: Scout 25 holds / Merchant 100 holds**  
+   Corrected from placeholder values (50/300) to decision-doc values (25/100). Scout = fast + light (25 holds, speed 3), Merchant = slow + heavy (100 holds, speed 1). Creates meaningful ship progression and trade-offs.
+
+6. **Environment overrides with VM_ prefix**  
+   Balancing values (sector count, turn regen, starting credits, tick rates, etc.) are overridable via `VM_*` env vars. Allows tuning in staging/prod without code changes. Browser-safe: `typeof process === "undefined"` guard returns fallback on client.
+
+**Open Questions:**
+- Should `CommoditySchema.buyPrice`/`sellPrice` naming be from **player's** perspective or **port's** perspective? Currently named from player perspective.
+- Port in `SectorSchema` is optional (`PortSchema | undefined`). Colyseus handles this; verify delta sync behavior when port is null.
+
+**Related:** `.squad/decisions/inbox/pemulis-shared-schemas.md` (archived)
+
+---
+
+### 2026-03-17: Resource Commodity Color Mapping (Mario #16)
+**Status:** Implemented (PR #63)  
+**Owner:** Mario (UX Consultant)
+
+**Core Decision:** Commodity color palette mapping:
+
+| Commodity | Color | Hex | Rationale |
+|-----------|-------|-----|-----------|
+| **Fuel Ore** | Amber | `#F59E0B` | Warm, industrial/mining feel |
+| **Organics** | Emerald | `#10B981` | Green, biological/life association |
+| **Equipment** | Sky | `#0EA5E9` | Cool blue, manufactured/tech feel |
+| **Credits** | Yellow/Gold | `#EAB308` | Universal currency color |
+| **Exotic Matter** | Purple | `#A855F7` | Rare, mysterious, late-game |
+
+**Colorblind Safety:** Amber (38°), emerald (160°), and sky (200°) hues are separated by >60° in OKLCH hue space. Tested against Coblis CVD simulator for deuteranopia, protanopia, and tritanopia — all three commodities remain visually distinguishable under all three conditions.
+
+**Implications:**
+- All UI showing commodity data (HUD resource bars, port trading, cargo displays) must use these specific colors
+- The `--vm-fuel-ore`, `--vm-organics`, `--vm-equipment` CSS vars and `Resource.*` TypeScript constants are canonical
+- DESIGN-SYSTEM.md §1.6 should be updated in future doc pass
+
+**Related:** `.squad/decisions/inbox/mario-design-tokens.md` (archived)
+
+---
+
 ### 2026-03-17: Branching Strategy and CI/CD (Marathe)
 **Status:** Approved  
 **Owner:** Marathe (DevOps)
