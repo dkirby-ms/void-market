@@ -36,6 +36,7 @@ import {
   isValidCommodity,
   freeCargoHolds,
 } from "../game/ShipManager.js";
+import { verifyToken, type JwtPayload } from "../auth/jwt.js";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -127,9 +128,26 @@ export class GalaxyRoom extends Room<{ state: GalaxyState }> {
 
   // ── Lifecycle ────────────────────────────────────────────────────────────
 
-  onJoin(client: Client, options?: { displayName?: string }) {
-    const playerId = nextPlayerId();
-    const displayName = options?.displayName ?? `Pilot-${playerId}`;
+  /**
+   * Authenticate client before allowing room join.
+   * Expects `options.token` containing a valid JWT access token.
+   * Returns the decoded payload which is passed to onJoin as the auth argument.
+   */
+  onAuth(_client: Client, options: { token?: string }): JwtPayload {
+    if (!options.token) {
+      throw new Error("Authentication token required");
+    }
+    const payload = verifyToken(options.token);
+    if (!payload) {
+      throw new Error("Invalid or expired token");
+    }
+    return payload;
+  }
+
+  onJoin(client: Client, options?: { displayName?: string }, auth?: JwtPayload) {
+    const playerId = auth?.userId ?? nextPlayerId();
+    const displayName =
+      options?.displayName ?? auth?.username ?? `Pilot-${playerId}`;
 
     // Create player schema
     const player = new PlayerSchema();
