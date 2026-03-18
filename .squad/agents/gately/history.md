@@ -35,6 +35,16 @@
 
 ## Learnings
 
+### 2026-03-17: PR #68 — Galaxy Map PixiJS Renderer (#29)
+
+- **GalaxyRenderer** is fully data-driven — accepts `GalaxyData` (plain interfaces mirroring Colyseus schemas), renders sectors as `SectorNode` instances and warp connections as batched `Graphics` lines.
+- **pixi-viewport** (v5) works well with PixiJS 8 for drag-pan and scroll-zoom. Key config: `clampZoom` for limits, `decelerate` for smooth stop, `wheel({ smooth: 5 })` for smooth zoom.
+- **Import paths:** Shared package only exports from barrel (`@void-market/shared`), not subpaths. Vite resolves `@void-market/shared/src/...` incorrectly because `package.json` exports map doesn't include subpath patterns.
+- **ESLint strictness:** This project has `@typescript-eslint/unbound-method`, `no-confusing-void-expression`, `restrict-plus-operands`, and `no-non-null-assertion` enabled. Arrow wrappers needed for event handlers passed as callbacks; template literals needed for string concatenation with numbers.
+- **Container culling:** Setting `cullable = true` on both the parent `GalaxyRenderer` container and individual `SectorNode` children skips render calls for off-screen nodes automatically.
+- **Mock data design:** Seeded RNG (`seededRandom(42)`) ensures deterministic sector placement across sessions. Nearest-neighbor warp topology creates a visually natural graph. ~40% port density with 8 port classes.
+- **Tooltip approach:** PixiJS `Text` + `Graphics` background rendered as child of each `SectorNode`, toggled on hover. Positioned offset from node center to avoid overlapping the sector circle.
+
 ### 2026-03-16: PR #122 Final Approval — Head-to-Head Mode Merged
 
 - **Decisions merged:** `gately-head-to-head.md` and `gately-turn-indicator.md` now in `.squad/decisions.md`
