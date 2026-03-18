@@ -7,16 +7,16 @@ on:
     paths-ignore:
       - docs/**
       - .squad/**
-      - '*.md'
-      - '**/*.md'
+      - "*.md"
+      - "**/*.md"
   push:
     branches:
       - dev
     paths-ignore:
       - docs/**
       - .squad/**
-      - '*.md'
-      - '**/*.md'
+      - "*.md"
+      - "**/*.md"
 
 permissions:
   contents: read

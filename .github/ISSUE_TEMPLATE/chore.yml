@@ -1,6 +1,6 @@
 name: 🛠️ Chore
 description: Infrastructure, maintenance, or internal improvements
-labels: ['chore']
+labels: ["chore"]
 assignees: []
 
 body:

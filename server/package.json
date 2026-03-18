@@ -6,7 +6,8 @@
   "main": "./dist/index.js",
   "scripts": {
     "build": "tsc --build",
-    "clean": "tsc --build --clean"
+    "clean": "tsc --build --clean",
+    "lint": "eslint src/"
   },
   "dependencies": {
     "@void-market/shared": "*"

@@ -13,7 +13,9 @@
     "build": "tsc --build",
     "lint": "npm run lint --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
-    "clean": "tsc --build --clean"
+    "clean": "tsc --build --clean",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "engines": {
     "node": ">=22.0.0"
@@ -30,7 +32,13 @@
   },
   "homepage": "https://github.com/dkirby-ms/void-market#readme",
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/node": "^25.5.0",
-    "typescript": "~5.8.3"
+    "eslint": "^10.0.3",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.4.0",
+    "prettier": "^3.8.1",
+    "typescript": "~5.8.3",
+    "typescript-eslint": "^8.57.1"
   }
 }
