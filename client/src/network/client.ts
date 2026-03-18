@@ -138,8 +138,8 @@ export function subscribeToRoom(cb: RoomListener): () => void {
   };
 }
 
-/** Join (or reconnect to) GalaxyRoom. */
-export async function connect(): Promise<Room<GalaxyState>> {
+/** Join (or reconnect to) GalaxyRoom. Optionally pass a JWT auth token. */
+export async function connect(authToken?: string): Promise<Room<GalaxyState>> {
   const client = getColyseusClient();
   notifyStatus("connecting");
 
@@ -153,9 +153,12 @@ export async function connect(): Promise<Room<GalaxyState>> {
       }
     }
 
+    const options: Record<string, unknown> = {};
+    if (authToken) options.token = authToken;
+
     const room = await client.joinOrCreate<GalaxyState>(
       "galaxy",
-      {},
+      options,
       GalaxyState,
     );
     return setupRoom(room);
