@@ -27,7 +27,7 @@ export default tseslint.config(
   {
     languageOptions: {
       parserOptions: {
-        projectService: true,
+        projectService: false,
         tsconfigRootDir: import.meta.dirname,
       },
     },
@@ -45,20 +45,36 @@ export default tseslint.config(
   // Shared workspace overrides
   {
     files: ["shared/src/**/*.ts"],
+    languageOptions: {
+      parserOptions: {
+        project: "./shared/tsconfig.json",
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
     rules: {},
   },
 
   // Server workspace overrides
   {
     files: ["server/src/**/*.ts"],
+    languageOptions: {
+      parserOptions: {
+        project: "./server/tsconfig.json",
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
     rules: {},
   },
 
   // Client workspace overrides
-  // TODO: Add eslint-plugin-react and eslint-plugin-react-hooks
-  // when they support ESLint 10+ and React is adopted in client
   {
     files: ["client/src/**/*.ts", "client/src/**/*.tsx"],
+    languageOptions: {
+      parserOptions: {
+        project: "./client/tsconfig.json",
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
     rules: {},
   },
 
