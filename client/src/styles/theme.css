@@ -1,0 +1,245 @@
+/**
+ * Void Market Theme — Design Tokens CSS
+ *
+ * Extracted from Figma exports and shared design system (shared/src/design-tokens.ts).
+ * CSS custom properties for colors, spacing, typography, and UI effects.
+ *
+ * Color space: OKLCH with hex fallbacks for broad browser support.
+ * Spacing: 4px base unit (8px grid). Typography: 6-tier scale from 12px–24px.
+ *
+ * Usage:
+ *  - DOM/Tailwind components: use var(--vm-*) custom properties
+ *  - PixiJS rendering: convert hex values from shared/src/design-tokens.ts
+ *  - Import this file early in your CSS pipeline (before components)
+ *
+ * @see shared/src/design-tokens.ts — PixiJS hex source
+ * @see shared/src/constants.ts — Game balance values (turn costs, port classes)
+ * @see docs/UX-BRIEF.md — Design principles
+ */
+
+:root {
+  /* ────────────────────────────────────────────────────────────────────────── */
+  /* Neutral Palette — Zinc scale (light mode fallbacks)                        */
+  /* ────────────────────────────────────────────────────────────────────────── */
+
+  --vm-neutral-950: oklch(0.145 0 0); /* #0a0a0b */
+  --vm-neutral-900: oklch(0.188 0 0); /* #18181b */
+  --vm-neutral-800: oklch(0.243 0 0); /* #27272a */
+  --vm-neutral-700: oklch(0.322 0 0); /* #3f3f46 */
+  --vm-neutral-600: oklch(0.370 0 0); /* #52525b */
+  --vm-neutral-500: oklch(0.465 0 0); /* #71717a */
+  --vm-neutral-400: oklch(0.628 0 0); /* #a1a1aa */
+  --vm-neutral-300: oklch(0.828 0 0); /* #d4d4d8 */
+  --vm-neutral-200: oklch(0.892 0 0); /* #e4e4e7 */
+  --vm-neutral-100: oklch(0.956 0 0); /* #f4f4f5 */
+  --vm-neutral-white: oklch(1 0 0); /* #ffffff */
+
+  /* ────────────────────────────────────────────────────────────────────────── */
+  /* Semantic Colors — Status and intent                                        */
+  /* ────────────────────────────────────────────────────────────────────────── */
+
+  /** Primary accent: Violet-500. Links, highlights, interactive elements. */
+  --vm-primary: oklch(0.488 0.243 264.376); /* #8b5cf6 */
+  --vm-primary-light: oklch(0.565 0.218 264.376); /* #a78bfa */
+  --vm-primary-dark: oklch(0.436 0.294 264.376); /* #7c3aed */
+
+  /** Success: Green-500. Online status, sufficient resources, trade completion. */
+  --vm-success: oklch(0.627 0.224 142.495); /* #22c55e */
+
+  /** Warning: Amber-500. Caution, medium-level alerts, low resources. */
+  --vm-warning: oklch(0.596 0.210 70.080); /* #f59e0b */
+
+  /** Danger: Red-500. Critical, destructive actions, insufficient resources. */
+  --vm-danger: oklch(0.548 0.296 29.234); /* #ef4444 */
+
+  /** Info: Violet (same as primary). Informational callouts and help text. */
+  --vm-info: oklch(0.488 0.243 264.376); /* #8b5cf6 */
+
+  /* ────────────────────────────────────────────────────────────────────────── */
+  /* Commodity/Resource Colors — Colorblind-safe palette                       */
+  /* ────────────────────────────────────────────────────────────────────────── */
+
+  /** Fuel Ore: Amber (warm) — 400 light, 500 standard */
+  --vm-fuel-ore: oklch(0.596 0.210 70.080); /* #f59e0b */
+  --vm-fuel-ore-light: oklch(0.649 0.189 70.080); /* #fbbf24 */
+
+  /** Organics: Emerald (green) — 400 light, 500 standard */
+  --vm-organics: oklch(0.565 0.218 155.826); /* #10b981 */
+  --vm-organics-light: oklch(0.628 0.194 155.826); /* #34d399 */
+
+  /** Equipment: Sky (cool blue) — 400 light, 500 standard */
+  --vm-equipment: oklch(0.565 0.220 265.755); /* #0ea5e9 */
+  --vm-equipment-light: oklch(0.628 0.190 265.755); /* #38bdf8 */
+
+  /** Credits: Gold/Yellow — currency for trading. 400 light, 500 standard */
+  --vm-credits: oklch(0.790 0.223 86.047); /* #eab308 */
+  --vm-credits-light: oklch(0.897 0.235 86.047); /* #facc15 */
+
+  /** Exotic Matter: Purple — late-game resource. 400 light, 500 standard */
+  --vm-exotic: oklch(0.627 0.265 303.900); /* #a855f7 */
+  --vm-exotic-light: oklch(0.708 0.228 303.900); /* #c084fc */
+
+  /* ────────────────────────────────────────────────────────────────────────── */
+  /* Player/Faction Identification — Distinct hues for multiplayer             */
+  /* ────────────────────────────────────────────────────────────────────────── */
+
+  --vm-player-1: oklch(0.548 0.296 29.234); /* #ef4444 red */
+  --vm-player-2: oklch(0.457 0.310 258.595); /* #3b82f6 blue */
+  --vm-player-3: oklch(0.627 0.224 142.495); /* #22c55e green */
+  --vm-player-4: oklch(0.596 0.210 70.080); /* #f59e0b amber */
+  --vm-player-5: oklch(0.627 0.265 303.900); /* #a855f7 purple */
+  --vm-player-6: oklch(0.590 0.204 209.505); /* #06b6d4 cyan */
+  --vm-player-neutral: oklch(0.322 0 0); /* #3f3f46 zinc-700 */
+
+  /* ────────────────────────────────────────────────────────────────────────── */
+  /* Surface Layers — Glass-morphism and depth                                 */
+  /* ────────────────────────────────────────────────────────────────────────── */
+
+  /** Base dark surface for modals, panels, cards. */
+  --vm-surface: oklch(0.145 0 0); /* #18181b */
+
+  /** Elevated surface for dropdowns, popovers, raised cards. */
+  --vm-surface-raised: oklch(0.188 0 0); /* #27272a */
+
+  /** Glass-morphism background (dark theme 80% opacity). */
+  --vm-glass-bg: rgba(24, 24, 27, 0.8); /* #18181b @ 80% */
+
+  /** Glass border for glass-morphism UI elements. */
+  --vm-glass-border: oklch(0.322 0 0); /* #3f3f46 */
+
+  /** Glass-morphism blur radius in pixels (used with CSS backdrop-filter). */
+  --vm-glass-blur: 8px;
+
+  /* ────────────────────────────────────────────────────────────────────────── */
+  /* Canvas/PixiJS Colors — Galaxy map rendering                              */
+  /* ────────────────────────────────────────────────────────────────────────── */
+
+  /** Galaxy map background (black). */
+  --vm-canvas-bg: oklch(0.145 0 0); /* #0a0a0b */
+
+  /** Star field point color (rendered at ~30% alpha). */
+  --vm-canvas-starfield: oklch(1 0 0); /* #ffffff */
+
+  /** Warp-route line color (rendered at ~20% alpha). */
+  --vm-canvas-warp-route: oklch(0.488 0.243 264.376); /* #8b5cf6 */
+
+  /** Hovered sector stroke. */
+  --vm-canvas-sector-hover: oklch(0.565 0.218 264.376); /* #a78bfa */
+
+  /** Default sector fill (unclaimed neutral space). */
+  --vm-canvas-sector-neutral: oklch(0.322 0 0); /* #3f3f46 */
+
+  /** Homeworld planet marker (homebase indicator). */
+  --vm-canvas-homeworld: oklch(0.596 0.210 70.080); /* #f59e0b */
+
+  /** Fleet triangle indicator on map. */
+  --vm-canvas-fleet: oklch(0.565 0.218 264.376); /* #a78bfa */
+
+  /** Sector label text color. */
+  --vm-canvas-label: oklch(1 0 0); /* #ffffff */
+
+  /* ────────────────────────────────────────────────────────────────────────── */
+  /* Alpha/Opacity Values — Glass-morphism and rendering layers               */
+  /* ────────────────────────────────────────────────────────────────────────── */
+
+  --vm-alpha-glass: 0.8;
+  --vm-alpha-starfield: 0.3;
+  --vm-alpha-warp-route: 0.2;
+  --vm-alpha-controlled-glow: 0.2;
+  --vm-alpha-hover-border: 0.5;
+
+  /* ────────────────────────────────────────────────────────────────────────── */
+  /* Typography — 6-tier font scale and weights                               */
+  /* ────────────────────────────────────────────────────────────────────────── */
+
+  /** Extra-small: 12px */
+  --vm-font-xs: 0.75rem;
+  /** Small: 14px */
+  --vm-font-sm: 0.875rem;
+  /** Base/Body: 16px */
+  --vm-font-base: 1rem;
+  /** Large: 18px */
+  --vm-font-lg: 1.125rem;
+  /** Extra-large: 20px */
+  --vm-font-xl: 1.25rem;
+  /** 2X-large: 24px */
+  --vm-font-2xl: 1.5rem;
+
+  /** Standard line height multiplier for comfortable reading. */
+  --vm-line-height: 1.5;
+
+  /** Font family: System sans-serif (default for UI and body text). */
+  --vm-font-family-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, sans-serif;
+
+  /** Font family: Monospace (for code snippets, stats, trade logs). */
+  --vm-font-family-mono: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono",
+    Menlo, monospace;
+
+  /** Font weight: Normal (400) */
+  --vm-font-weight-normal: 400;
+  /** Font weight: Medium (500) */
+  --vm-font-weight-medium: 500;
+  /** Font weight: Semi-bold (600) */
+  --vm-font-weight-semibold: 600;
+  /** Font weight: Bold (700) */
+  --vm-font-weight-bold: 700;
+
+  /* ────────────────────────────────────────────────────────────────────────── */
+  /* Spacing — 4px base unit (8px grid with half-steps)                       */
+  /* ────────────────────────────────────────────────────────────────────────── */
+
+  --vm-space-xs: 0.25rem; /* 4px */
+  --vm-space-sm: 0.5rem; /* 8px */
+  --vm-space-md: 0.75rem; /* 12px */
+  --vm-space-lg: 1rem; /* 16px */
+  --vm-space-xl: 1.5rem; /* 24px */
+  --vm-space-2xl: 2rem; /* 32px */
+  --vm-space-3xl: 3rem; /* 48px */
+
+  /* ────────────────────────────────────────────────────────────────────────── */
+  /* Border Radius — Rounded corners scale                                     */
+  /* ────────────────────────────────────────────────────────────────────────── */
+
+  --vm-radius-sm: 0.375rem; /* 6px */
+  --vm-radius-md: 0.5rem; /* 8px */
+  --vm-radius-lg: 0.625rem; /* 10px */
+  --vm-radius-xl: 0.875rem; /* 14px */
+  --vm-radius-full: 9999px; /* Full rounding */
+
+  /* ────────────────────────────────────────────────────────────────────────── */
+  /* Layout Dimensions — Fixed UI measurements                                */
+  /* ────────────────────────────────────────────────────────────────────────── */
+
+  --vm-layout-hud-height: 64px; /* Top HUD bar */
+  --vm-layout-sidebar-width: 256px; /* Expanded sidebar */
+  --vm-layout-sidebar-collapsed: 64px; /* Collapsed sidebar icon rail */
+  --vm-layout-chat-width: 320px; /* Chat/alliance sidebar */
+  --vm-layout-min-touch-target: 44px; /* Accessible touch target (iOS std) */
+
+  /* ────────────────────────────────────────────────────────────────────────── */
+  /* Z-Index Layers — Stacking context for overlays and modals                */
+  /* ────────────────────────────────────────────────────────────────────────── */
+
+  --vm-z-base: 0; /* Base layer (canvas) */
+  --vm-z-sidebar: 10; /* Navigation sidebar */
+  --vm-z-chat: 10; /* Chat/alliance panel */
+  --vm-z-hud: 50; /* HUD controls and panels */
+  --vm-z-tooltip: 50; /* Tooltips */
+  --vm-z-modal: 100; /* Modals and dialogs */
+
+  /* ────────────────────────────────────────────────────────────────────────── */
+  /* Animation & Transitions — Timing and effects                              */
+  /* ────────────────────────────────────────────────────────────────────────── */
+
+  /** Default transition duration for UI interactions (200ms). */
+  --vm-transition-ms: 200ms;
+
+  /** Backdrop blur radius for glass-morphism effects. */
+  --vm-backdrop-blur-px: 8px;
+}
+
+/* ── Dark Theme Overrides (when .dark class applied) ────────────────────────── */
+.dark {
+  /* Apply dark mode token overrides if needed (currently using :root values) */
+}
