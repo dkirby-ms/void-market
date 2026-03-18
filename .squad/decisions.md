@@ -250,6 +250,87 @@ See `.squad/decisions/inbox/mario-uux-design-brief.md` for full design brief.
 
 ---
 
+### 2026-03-18: ESLint + Prettier Configuration (Marathe)
+**Status:** Implemented  
+**Owner:** Marathe (DevOps)  
+**PR:** #55
+
+ESLint 10 flat config with typescript-eslint strict rules + Prettier for formatting. Double quotes chosen as Prettier default (matches TypeScript ecosystem conventions and avoids escape issues in JSX).
+
+**Key Rules:**
+- `strictTypeChecked` + `stylisticTypeChecked` — strict baseline for all workspaces
+- `ignoreProperties: true` on `no-inferrable-types` — Colyseus `@type` decorators need explicit annotations
+- `allowNumber: true` on `restrict-template-expressions` — idiomatic TS pattern
+- Test files exempt from `no-confusing-void-expression`
+
+**React Plugin Status:**
+`eslint-plugin-react` and `eslint-plugin-react-hooks` only support ESLint ≤9.7. Client workspace has a TODO placeholder. When plugins update for ESLint 10+, add them to the client override block.
+
+**Impact on Other Agents:**
+- **All agents:** Run `npm run lint` before committing. Run `npm run format` to auto-fix formatting.
+- **Pemulis:** Colyseus `@type` properties won't trigger `no-inferrable-types` thanks to `ignoreProperties`.
+- **Steeply:** Test files have relaxed void-expression rules for assertion patterns.
+- **Gately:** React ESLint plugins deferred — add when available for ESLint 10.
+
+**Related:** `.squad/orchestration-log/2026-03-18T000500Z-marathe-eslint.md`
+
+---
+
+### 2026-03-18: Vitest Test Infrastructure (Steeply)
+**Status:** Implemented  
+**Owner:** Steeply (Tester)  
+**Issue:** #12  
+**PR:** #53
+
+Vitest 4 with v8 coverage as the test framework for all workspaces.
+
+**Key Details:**
+- **Root config** (`vitest.config.ts`): Uses `test.projects` to discover per-workspace configs
+- **Per-workspace configs**: Each workspace has `vitest.config.ts` using `defineProject()`
+- **Coverage**: v8 provider, 80% threshold floors (statements, branches, functions, lines)
+- **Scripts**: `test` and `test:watch` in each workspace, `test:coverage` at root
+- **Shared test utils**: `shared/src/test-utils/index.ts` — import in any workspace
+
+**Conventions:**
+- Test files go in `src/__tests__/*.test.ts` or colocated as `src/**/*.test.ts`
+- Workspaces with no tests use `passWithNoTests: true` — no CI failures
+- Coverage reports to `./coverage/` (gitignored)
+- `npm run test` from root runs all workspace tests via `--workspaces --if-present`
+- `npm run test:coverage` from root runs Vitest with v8 coverage across all projects
+
+**Related:** `.squad/orchestration-log/2026-03-18T000500Z-steeply-test.md`
+
+---
+
+### 2026-03-18: Shared Package Scaffold (Pemulis)
+**Status:** Implemented  
+**Owner:** Pemulis (Systems Dev)  
+**Issue:** #4  
+**PR:** #54
+
+Added enums, constants, interfaces, Colyseus Schema base classes to @void-market/shared.
+
+**Key Additions:**
+- Game enums: Commodities, ResourceTypes, EntityTypes, AllianceStates, PortTypes, ShipClasses
+- Game constants: TURN_REGEN_RATE, TURN_BANK_CAP, TRADE_COST, MOVE_COST, COMBAT_COST, FORMATION_COST
+- TypeScript interfaces: IPlayer, IPort, IPlanet, IShip, IAlliancePlayer, IFederation
+- Colyseus Schema base classes: GameState, PlayerSchema, PortSchema, PlanetSchema, ShipSchema, AllianceSchema
+
+**Conventions:**
+- Shared schemas use Colyseus `@type` decorators with explicit type annotations
+- Interfaces serve as source-of-truth for TS type safety across client/server boundary
+- Constants centralized — no magic numbers in game logic
+- Enums prevent string-based state bugs in room logic
+
+**Impact:**
+- Gately can reference schema definitions when building client renderers
+- Steeply has typed interfaces for test fixtures
+- Marathe can validate serialization in CI
+
+**Related:** `.squad/orchestration-log/2026-03-18T000500Z-pemulis-shared.md`
+
+---
+
 ## Decision Merge History
 
 **2026-03-17:** Merged inbox decisions to canonical decisions.md. Deduplicated overlapping entries. Active decisions now consolidated in single source of truth.

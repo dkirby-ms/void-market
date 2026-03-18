@@ -732,3 +732,30 @@ Turn-based gameplay in real-time multiplayer framework = hybrid model where disc
 **Impact:** Project status is now visible in GitHub issues board. Milestones track phase progress. Dependency graph shows blocking relationships.
 
 **Reference:** `.squad/decisions.md` → "Track Project Plan as GitHub Issues" for label taxonomy and conventions.
+
+## Cross-Agent Update (2026-03-18) — Wave 2 Complete
+
+**From:** Squad Scribe  
+**Event:** Pemulis, Marathe, Steeply Wave 2 merged to dev
+
+**Wave 2 Status:** ✅ All Phase 0 foundation tasks complete and merged
+
+**Your Outcomes:**
+- PR #54 (shared package) merged
+- Enums, constants, interfaces, and Colyseus schemas now in shared package
+- 100% test coverage on shared
+- Pemulis tasks #5 (Server scaffold) unblocked — no dependencies
+
+**Marathe Outcomes:**
+- PR #55 (ESLint + Prettier) merged
+- Colyseus `@type` decorators now ESLint-compliant via `ignoreProperties: true`
+- All workspaces pass lint gates
+
+**Steeply Outcomes:**
+- PR #53 (Vitest infrastructure) merged
+- 12 tests passing, v8 coverage ready, 80% threshold enforced
+- Shared test utils available for your server tests
+
+**Blocker Status:** None remaining for Phase 1. Gately and client track ready to begin when server schemas stable.
+
+**Next:** Dispatch to issue #5 (Server scaffold). Pemulis can now implement GalaxyRoom and entity managers.
