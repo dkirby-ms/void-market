@@ -497,3 +497,21 @@ Finishing agent should convert .todo() stubs to executable tests using Pemulis/G
 **Blocker Status:** None. Phase 1 server/client tracks unblocked. Pemulis tests can begin as GalaxyRoom stabilizes.
 
 **Next:** Phase 1 test tasks (#20–#26) ready to begin. Coordinate with Pemulis on test timing (after room logic stable, before persistence layer).
+
+---
+
+## Galaxy Generator Contract Tests — #40 (2026-03-18)
+
+**Branch:** `squad/40-galaxy-gen-tests` → PR #69 to `dev`
+
+**What was done:**
+- Created 15 contract tests for `generateGalaxy()` at `server/src/galaxy/__tests__/GalaxyGenerator.test.ts`
+- Tests validate requirements from issue #40: sector count, BFS connectivity, warp bounds (2-6), bidirectional warps, no self/duplicate warps, port density (60% ±10%), port type distribution (SBB/BSB/BBS/SSB), commodity stocks, x/y coords, deterministic RNG, GalaxyState type
+- Added stub `server/src/galaxy/GalaxyGenerator.ts` that throws "not implemented" — will be replaced by PR #18
+- Build ✅, lint ✅, tests discover all 15 cases (correctly skip against stub)
+
+## Learnings
+- Colyseus `ArraySchema` always has `toArray()` — no need for runtime feature detection. Just use `Array.from()` for safe iteration in tests.
+- `strictTypeChecked` eslint does NOT honor `_`-prefix for unused params by default. Use inline `eslint-disable-next-line` for intentional stubs.
+- BFS reachability is the most valuable galaxy generator test — catches disconnected subgraphs that players would get stuck in. Always test from sector 1 (starting sector).
+- Writing tests from requirements first (test-first) surfaces the exact public API contract early, giving the implementer (Pemulis) a clear target to hit.
