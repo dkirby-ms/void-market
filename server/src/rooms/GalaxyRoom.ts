@@ -48,6 +48,8 @@ import {
   saveGalaxy,
   savePortCommodities,
 } from "../db/GalaxyRepository.js";
+import { isDevAuthEnabled, DEV_USER } from "../auth/dev-auth.js";
+import { verifyToken } from "../auth/jwt.js";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -158,11 +160,34 @@ export class GalaxyRoom extends Room<{ state: GalaxyState }> {
 
     // ── Auto-save: persist players + economy every 5 minutes ──
     this.clock.setInterval(() => {
-      this.autoSave();
+      void this.autoSave();
     }, AUTOSAVE_INTERVAL_MS);
 
     // Initial economy stats calculation
     this.recalculateEconomyStats();
+  }
+
+  // ── Auth ──────────────────────────────────────────────────────────────────
+
+  onAuth(
+    _client: Client,
+    options?: { token?: string; displayName?: string; userId?: string },
+  ): { userId: string; username: string } {
+    // Dev bypass: accept any connection without a valid JWT
+    if (isDevAuthEnabled()) {
+      return { userId: options?.userId ?? DEV_USER.id, username: DEV_USER.username };
+    }
+
+    // Production path: require a valid JWT
+    const token = options?.token;
+    if (!token) {
+      throw new Error("Missing authentication token");
+    }
+    const payload = verifyToken(token);
+    if (!payload) {
+      throw new Error("Invalid or expired token");
+    }
+    return { userId: payload.userId, username: payload.username };
   }
 
   // ── Lifecycle ────────────────────────────────────────────────────────────

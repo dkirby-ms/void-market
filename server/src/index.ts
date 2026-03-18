@@ -3,7 +3,7 @@ import { defineServer, defineRoom } from "@colyseus/core";
 import { WebSocketTransport } from "@colyseus/ws-transport";
 import { VERSION } from "@void-market/shared";
 import { GalaxyRoom } from "./rooms/GalaxyRoom.js";
-import { authRouter } from "./auth/index.js";
+import { authRouter, isDevAuthEnabled } from "./auth/index.js";
 
 const PORT = Number(process.env.PORT) || 2567;
 
@@ -27,4 +27,9 @@ const server = defineServer({
 
 void server.listen(PORT).then(() => {
   console.log(`@void-market/server v${VERSION} listening on port ${PORT}`);
+  if (isDevAuthEnabled()) {
+    console.log(
+      "[dev-auth] ⚡ Dev auth bypass ENABLED — GET /api/auth/dev-token for tokens",
+    );
+  }
 });

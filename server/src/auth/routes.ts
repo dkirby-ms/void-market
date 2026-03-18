@@ -7,6 +7,7 @@ import {
   verifyRefreshToken,
 } from "./jwt.js";
 import { requireAuth, type AuthenticatedRequest } from "./middleware.js";
+import { isDevAuthEnabled, devTokenHandler } from "./dev-auth.js";
 
 // ── Validation helpers ───────────────────────────────────────────────────────
 
@@ -44,6 +45,12 @@ interface UserRow {
 // ── Router ───────────────────────────────────────────────────────────────────
 
 export const authRouter = Router();
+
+// ── Dev-only endpoint (completely unreachable in production) ──────────────────
+
+if (isDevAuthEnabled()) {
+  authRouter.get("/dev-token", devTokenHandler);
+}
 
 /** POST /api/auth/register — create account, return tokens. */
 authRouter.post("/register", async (req: Request, res: Response) => {
