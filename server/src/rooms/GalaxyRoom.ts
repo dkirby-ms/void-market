@@ -3,6 +3,7 @@ import {
   GalaxyState,
   PlayerSchema,
   ShipSchema,
+  CargoSchema,
   CommoditySchema,
   ShipClass,
   Commodity,
@@ -14,12 +15,13 @@ import {
   STARTING_SECTOR_ID,
   MAX_TURN_BANK,
   TURN_COSTS,
-  TURN_REGEN_INTERVAL_MS,
   SHIP_SPECS,
   BASE_PRICES,
   PRICE_VARIANCE_PCT,
   RESTOCK_RATE,
   SLOW_TICK_MS,
+  AUTOSAVE_INTERVAL_MS,
+  TURN_REGEN_INTERVAL_MS,
   type MoveMessage,
   type TradeMessage,
   type ErrorMessage,
@@ -36,7 +38,16 @@ import {
   isValidCommodity,
   freeCargoHolds,
 } from "../game/ShipManager.js";
-import { verifyToken, type JwtPayload } from "../auth/jwt.js";
+import {
+  savePlayer,
+  loadPlayer,
+  saveAllPlayers,
+} from "../db/PlayerRepository.js";
+import {
+  loadGalaxy,
+  saveGalaxy,
+  savePortCommodities,
+} from "../db/GalaxyRepository.js";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -83,16 +94,40 @@ export function calculatePrice(
  * GalaxyRoom — persistent room that holds the galaxy state.
  *
  * Responsibilities:
- *  - Generate the galaxy on creation (via GalaxyGenerator)
- *  - Spawn players on join (sector 1, starting turns/credits)
+ *  - Load galaxy from DB (or generate + persist on first run)
+ *  - Spawn players on join (restore from DB if returning)
  *  - Handle move, dock, undock, and trade commands
  *  - Validate turn balance on every action
- *  - Regenerate turns on a timer
+ *  - Regenerate turns, restock ports, and track economy on timers
+ *  - Auto-save player and economy state every 5 minutes
+ *  - Persist player state on disconnect, full state on disposal
  */
 export class GalaxyRoom extends Room<{ state: GalaxyState }> {
-  onCreate(options: { seed?: number } = {}) {
+  /** Maps client sessionId → userId for persistence. */
+  private userSessionMap = new Map<string, string>();
+
+  async onCreate(options: { seed?: number } = {}) {
     const seed = options.seed ?? Date.now();
-    this.state = generateGalaxy(seed);
+
+    // Try loading persisted galaxy from DB; generate if not found
+    const state = new GalaxyState();
+    const loaded = await loadGalaxy(state);
+
+    if (loaded) {
+      this.state = state;
+      console.log(
+        `[GalaxyRoom] Loaded persisted galaxy (roomId: ${this.roomId}, sectors: ${this.state.sectors.size})`,
+      );
+    } else {
+      this.state = generateGalaxy(seed);
+      // Persist the generated galaxy (fire-and-forget)
+      saveGalaxy(this.state).catch(() => {
+        // handled inside saveGalaxy
+      });
+      console.log(
+        `[GalaxyRoom] Generated new galaxy (roomId: ${this.roomId}, seed: ${seed}, sectors: ${this.state.sectors.size})`,
+      );
+    }
 
     // ── Register message handlers ──
     this.onMessage(CLIENT_MSG.MOVE, (client, message: MoveMessage) => {
@@ -116,66 +151,92 @@ export class GalaxyRoom extends Room<{ state: GalaxyState }> {
       this.regenTurns();
     }, TURN_REGEN_INTERVAL_MS);
 
-    // ── Economy slow tick: port restocking ──
+    // ── Economy slow tick: restocking + price recalculation + logging ──
     this.clock.setInterval(() => {
-      this.restockPorts();
+      this.economyTick();
     }, SLOW_TICK_MS);
 
-    console.log(
-      `[GalaxyRoom] Created (roomId: ${this.roomId}, seed: ${seed}, sectors: ${this.state.sectors.size})`,
-    );
+    // ── Auto-save: persist players + economy every 5 minutes ──
+    this.clock.setInterval(() => {
+      this.autoSave();
+    }, AUTOSAVE_INTERVAL_MS);
+
+    // Initial economy stats calculation
+    this.recalculateEconomyStats();
   }
 
   // ── Lifecycle ────────────────────────────────────────────────────────────
 
-  /**
-   * Authenticate client before allowing room join.
-   * Expects `options.token` containing a valid JWT access token.
-   * Returns the decoded payload which is passed to onJoin as the auth argument.
-   */
-  onAuth(_client: Client, options: { token?: string }): JwtPayload {
-    if (!options.token) {
-      throw new Error("Authentication token required");
-    }
-    const payload = verifyToken(options.token);
-    if (!payload) {
-      throw new Error("Invalid or expired token");
-    }
-    return payload;
-  }
+  async onJoin(client: Client, options?: { displayName?: string; userId?: string }) {
+    const userId = options?.userId;
 
-  onJoin(client: Client, options?: { displayName?: string }, auth?: JwtPayload) {
-    const playerId = auth?.userId ?? nextPlayerId();
+    // If the player has a userId, try to restore their saved state
+    const playerData = userId ? await loadPlayer(userId) : null;
+    if (userId) {
+      this.userSessionMap.set(client.sessionId, userId);
+    }
+
+    const playerId = nextPlayerId();
     const displayName =
-      options?.displayName ?? auth?.username ?? `Pilot-${playerId}`;
+      playerData?.displayName ?? options?.displayName ?? `Pilot-${playerId}`;
 
-    // Create player schema
     const player = new PlayerSchema();
     player.playerId = playerId;
     player.displayName = displayName;
-    player.credits = STARTING_CREDITS;
-    player.turnsRemaining = STARTING_TURNS;
-    player.turnsMax = MAX_TURN_BANK;
-    player.currentSectorId = STARTING_SECTOR_ID;
-    player.isDocked = false;
     player.isOnline = true;
 
-    // Create default ship (Scout)
-    const ship = new ShipSchema();
-    const scoutSpec = SHIP_SPECS[ShipClass.Scout];
-    ship.shipId = `ship-${playerId}`;
-    ship.shipClass = ShipClass.Scout;
-    ship.name = `${displayName}'s Scout`;
-    ship.maxCargoHolds = scoutSpec.cargoCapacity;
-    ship.speed = scoutSpec.warpSpeed;
-    ship.cargoHolds = 0;
-    player.ship = ship;
+    if (playerData) {
+      // ── Restore saved state ──
+      player.credits = playerData.credits;
+      player.turnsRemaining = playerData.turnsRemaining;
+      player.turnsMax = playerData.turnsMax;
+      player.currentSectorId = playerData.currentSectorId;
+      player.isDocked = playerData.isDocked;
+
+      const ship = new ShipSchema();
+      ship.shipId = `ship-${playerId}`;
+      ship.shipClass = playerData.ship.shipClass;
+      ship.name = playerData.ship.name;
+      ship.maxCargoHolds = playerData.ship.maxCargoHolds;
+      ship.speed = playerData.ship.speed;
+      ship.cargoHolds = 0;
+
+      // Restore cargo (direct push to preserve exact saved quantities)
+      for (const c of playerData.cargo) {
+        if (c.quantity > 0) {
+          const cs = new CargoSchema();
+          cs.commodity = c.commodity;
+          cs.quantity = c.quantity;
+          ship.cargo.push(cs);
+          ship.cargoHolds += c.quantity;
+        }
+      }
+
+      player.ship = ship;
+    } else {
+      // ── New player defaults ──
+      player.credits = STARTING_CREDITS;
+      player.turnsRemaining = STARTING_TURNS;
+      player.turnsMax = MAX_TURN_BANK;
+      player.currentSectorId = STARTING_SECTOR_ID;
+      player.isDocked = false;
+
+      const ship = new ShipSchema();
+      const scoutSpec = SHIP_SPECS[ShipClass.Scout];
+      ship.shipId = `ship-${playerId}`;
+      ship.shipClass = ShipClass.Scout;
+      ship.name = `${displayName}'s Scout`;
+      ship.maxCargoHolds = scoutSpec.cargoCapacity;
+      ship.speed = scoutSpec.warpSpeed;
+      ship.cargoHolds = 0;
+      player.ship = ship;
+    }
 
     // Register in state
     this.state.players.set(client.sessionId, player);
 
-    // Add to starting sector's playerIds
-    const sector = this.state.sectors.get(String(STARTING_SECTOR_ID));
+    // Add to current sector's playerIds
+    const sector = this.state.sectors.get(String(player.currentSectorId));
     if (sector) {
       sector.playerIds.push(client.sessionId);
     }
@@ -185,19 +246,20 @@ export class GalaxyRoom extends Room<{ state: GalaxyState }> {
       type: SERVER_MSG.PLAYER_JOINED,
       playerId: client.sessionId,
       displayName,
-      sectorId: STARTING_SECTOR_ID,
+      sectorId: player.currentSectorId,
     };
     this.broadcast(SERVER_MSG.PLAYER_JOINED, joinMsg, { except: client });
 
     // Send initial turn update to joining player
     this.sendTurnUpdate(client, player);
+    this.recalculateEconomyStats();
 
     console.log(
-      `[GalaxyRoom] Player joined: ${client.sessionId} (${displayName}) in sector ${STARTING_SECTOR_ID}`,
+      `[GalaxyRoom] Player joined: ${client.sessionId} (${displayName}) in sector ${player.currentSectorId}${userId ? " [returning]" : ""}`,
     );
   }
 
-  onLeave(client: Client) {
+  async onLeave(client: Client) {
     const player = this.state.players.get(client.sessionId);
     if (player) {
       player.isOnline = false;
@@ -208,6 +270,13 @@ export class GalaxyRoom extends Room<{ state: GalaxyState }> {
         const idx = sector.playerIds.indexOf(client.sessionId);
         if (idx !== -1) sector.playerIds.splice(idx, 1);
       }
+
+      // Persist player state if they have an associated user account
+      const userId = this.userSessionMap.get(client.sessionId);
+      if (userId) {
+        await savePlayer(player, userId);
+        this.userSessionMap.delete(client.sessionId);
+      }
     }
 
     // Broadcast leave
@@ -216,11 +285,13 @@ export class GalaxyRoom extends Room<{ state: GalaxyState }> {
       playerId: client.sessionId,
     };
     this.broadcast(SERVER_MSG.PLAYER_LEFT, leaveMsg);
+    this.recalculateEconomyStats();
 
     console.log(`[GalaxyRoom] Player left: ${client.sessionId}`);
   }
 
-  onDispose() {
+  async onDispose() {
+    await this.saveAllState();
     console.log(`[GalaxyRoom] Disposed (roomId: ${this.roomId})`);
   }
 
@@ -442,6 +513,9 @@ export class GalaxyRoom extends Room<{ state: GalaxyState }> {
       // Update stored price after stock change
       commoditySchema.buyPrice = calculatePrice(commoditySchema, true);
 
+      // Track trade volume
+      this.state.tradeVolume += actualPrice;
+
       const result: TradeResultMessage = {
         type: SERVER_MSG.TRADE_RESULT,
         success: true,
@@ -486,6 +560,9 @@ export class GalaxyRoom extends Room<{ state: GalaxyState }> {
 
       // Update stored price after stock change
       commoditySchema.sellPrice = calculatePrice(commoditySchema, false);
+
+      // Track trade volume
+      this.state.tradeVolume += totalPrice;
 
       const result: TradeResultMessage = {
         type: SERVER_MSG.TRADE_RESULT,
@@ -575,6 +652,71 @@ export class GalaxyRoom extends Room<{ state: GalaxyState }> {
         }
       });
     });
+  }
+
+  // ── Economy tracking ─────────────────────────────────────────────────────
+
+  /** Full economy tick: restock, recalculate prices, update stats, log. */
+  private economyTick(): void {
+    this.restockPorts();
+    this.recalculateEconomyStats();
+    this.state.lastEconomyTick = Date.now();
+
+    console.log(
+      `[GalaxyRoom] Economy tick — credits: ${Math.floor(this.state.totalCredits)}, volume: ${Math.floor(this.state.tradeVolume)}`,
+    );
+  }
+
+  /** Recalculate aggregate economy stats from current player state. */
+  private recalculateEconomyStats(): void {
+    let totalCredits = 0;
+    this.state.players.forEach((player) => {
+      totalCredits += player.credits;
+    });
+    this.state.totalCredits = totalCredits;
+  }
+
+  // ── Persistence helpers ──────────────────────────────────────────────────
+
+  /** Periodic auto-save of player state and port commodity data. */
+  private async autoSave(): Promise<void> {
+    try {
+      const entries: { player: PlayerSchema; userId: string }[] = [];
+      this.state.players.forEach((player, sessionId) => {
+        const userId = this.userSessionMap.get(sessionId);
+        if (userId) entries.push({ player, userId });
+      });
+
+      if (entries.length > 0) {
+        await saveAllPlayers(entries);
+      }
+
+      await savePortCommodities(this.state);
+
+      console.log(
+        `[GalaxyRoom] Auto-save complete (${entries.length} players, port commodities)`,
+      );
+    } catch (err) {
+      console.error("[GalaxyRoom] Auto-save failed:", err);
+    }
+  }
+
+  /** Save full state on room disposal. */
+  private async saveAllState(): Promise<void> {
+    try {
+      const entries: { player: PlayerSchema; userId: string }[] = [];
+      this.state.players.forEach((player, sessionId) => {
+        const userId = this.userSessionMap.get(sessionId);
+        if (userId) entries.push({ player, userId });
+      });
+
+      await Promise.all([
+        entries.length > 0 ? saveAllPlayers(entries) : Promise.resolve(),
+        saveGalaxy(this.state),
+      ]);
+    } catch (err) {
+      console.error("[GalaxyRoom] Failed to save state on dispose:", err);
+    }
   }
 
   // ── Messaging helpers ────────────────────────────────────────────────────

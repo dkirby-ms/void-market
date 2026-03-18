@@ -239,6 +239,9 @@ export const FAST_TICK_MS = envInt("VM_FAST_TICK_MS", 1_000);
 /** Slow tick interval (economy restock, NPC actions). */
 export const SLOW_TICK_MS = envInt("VM_SLOW_TICK_MS", 60_000);
 
+/** Auto-save interval for player and economy state (ms). */
+export const AUTOSAVE_INTERVAL_MS = envInt("VM_AUTOSAVE_MS", 300_000);
+
 // ── Federation / Alliance ────────────────────────────────────────────────────
 
 /** Maximum members per alliance. */
