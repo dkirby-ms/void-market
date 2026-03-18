@@ -1,0 +1,14 @@
+{
+  "name": "@void-market/server",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc --build",
+    "clean": "tsc --build --clean"
+  },
+  "dependencies": {
+    "@void-market/shared": "*"
+  }
+}

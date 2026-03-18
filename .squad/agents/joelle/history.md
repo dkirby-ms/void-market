@@ -155,3 +155,20 @@
 - Coordinate with Gately on PixiJS canvas/DOM sync patterns
 - Establish frontend testing strategy (unit + E2E for game state, UI components)
 
+
+## Cross-Agent Context (2026-03-17) — Project Plan Published
+
+**From:** Squad Scribe  
+**Event:** Hal completed 4-phase project breakdown with 44 concrete tasks
+
+**Project Plan:** `docs/PROJECT-PLAN.md` now live with full task assignments
+
+**Your Task Load (Phase 0–1):** 2 doc tasks  
+- **P0 (1 task):** Repo README (architecture, getting started, project structure)
+- **P1 (1 task):** GAME-SYSTEMS.md (gameplay systems, economy, turns, alliances—follows Pemulis's implementation)
+
+**Dependencies:** Both tasks follow implementation. README can start after Hal/Marathe scaffold repo structure. GAME-SYSTEMS.md follows Pemulis's Phase 1 system stabilization.
+
+**Parallel Work:** You're fully unblocked. No other tasks depend on your docs before Phase 2.
+
+**Read:** `docs/PROJECT-PLAN.md` for full task breakdown, sizing, and dependencies.

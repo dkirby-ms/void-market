@@ -30,6 +30,35 @@ Repo directory preserved as `galaxy-wars` for git/CI stability. See `.squad/orch
 
 ---
 
+### 2026-03-17: Project Phasing & Task Breakdown (Hal)
+**Status:** Approved  
+**Owner:** Hal (Lead)
+**Artifact:** `docs/PROJECT-PLAN.md`
+
+**Phase Structure:**
+- **Phase 0:** 9 scaffolding tasks (~1 week) — Monorepo, build, CI, Docker, test infra
+- **Phase 1:** 35 trading-loop tasks (~4 weeks) — Galaxy gen, navigation, trading, turns, ships, persistence, basic auth, PixiJS, HUD
+- **Phases 2–4:** Feature-level scope — Combat, Alliances, Endgame. Decomposed when Phase 1 ships.
+
+**Key Decisions:**
+1. Phase 0 exists (scaffolding before gameplay)
+2. Persistence in Phase 1 (not Phase 0) — depends on game schemas
+3. Auth is minimal (JWT, no OAuth until Phase 2+)
+4. Server and client tracks run in parallel (after shared schemas)
+5. Critical path: Shared schemas → GalaxyRoom (server) & Galaxy renderer (client) → Database (persistence)
+
+**Team Load:**
+- Pemulis: 14 server tasks (critical path)
+- Gately: 9 client tasks (blocked on schemas)
+- Steeply: 7 test tasks
+- Marathe: 4 Phase 0 + support
+- Mario: 3 UX tasks (parallel)
+- Joelle: 2 doc tasks
+
+**Related:** `.squad/orchestration-log/2026-03-17T01-00-00Z-hal.md`
+
+---
+
 ### 2026-03-16: Void Market Architecture Decisions (Hal)
 **Status:** Approved  
 **Context:** Initial architecture design
@@ -73,6 +102,128 @@ Repo directory preserved as `galaxy-wars` for git/CI stability. See `.squad/orch
 **Open Questions:** Turn cost balance, economy inflation, alliance betrayal cooldown, federation adoption, mobile accessibility.
 
 See `.squad/decisions/inbox/pemulis-game-systems.md` for full decision document.
+
+---
+
+### 2026-03-17: Figma Design System Conversion Strategy (Hal)
+**Status:** Proposed  
+**Owner:** Hal (Lead)  
+**Artifact:** `docs/FIGMA-CONVERSION-STRATEGY.md`
+
+**Decision:** Adopt React 18 for DOM overlays in Void Market instead of rewriting to vanilla TypeScript.
+
+**Rationale:**
+- Figma Make export provides production-ready React + Tailwind + shadcn/ui implementation (6 screens, 48 components, ~3,000 lines)
+- Vanilla TS rewrite costs 3-4 weeks for negligible benefit (~35KB bundle savings)
+- Architecture never mandated vanilla TS—only requires PixiJS for galaxy map and "DOM overlay" for UI (framework-agnostic)
+- React adoption accelerates Phase 1 by ~5.5 days (4 weeks → 3.5 weeks), saves ~15 days of component/form/accessibility work
+
+**Hybrid Rendering Model:**
+- **PixiJS 8 (WebGL):** Galaxy map (500+ sectors, camera controls, warp routes)
+- **React 18 (DOM):** HUD, trading panels, chat, alliance management, planet/fleet views
+- **Colyseus:** State sync (server authoritative)
+
+**Component Mapping:**
+- Keep as-is: GameLayout, HUD, Sidebar, AllianceChat, TradingView, SectorView, PlanetView, FleetView, AllianceView (DOM React)
+- Rewrite: GalaxyMap.tsx → PixiJS renderer (2-3 days)
+- Copy: 48 shadcn/ui components (0 effort)
+
+**Dependencies to Adopt:** React 18.3.1, React Router 7.13.0, Radix UI (20 packages), Tailwind 4.1.12, lucide-react 0.487.0  
+**Dependencies to Add:** pixi.js 8.0.0, pixi-viewport 5.0.0, colyseus.js 0.16.0  
+**Bundle Size:** ~260KB (acceptable for game client)
+
+**Success Criteria:** Phase 1 ships on time, 60 FPS desktop/30 FPS mobile, < 500KB bundle, Colyseus state sync works, UI accessible, team productive.
+
+**Next Steps:** Gately executes P0-4.1 (React + Tailwind setup). Pemulis uses Figma gameState.ts for Colyseus schemas. Mario reviews Figma theme vs UX-BRIEF.md.
+
+---
+
+### 2026-03-17: Design System Reference (Mario)
+**Status:** Complete  
+**Owner:** Mario (UX Consultant)  
+**Artifact:** `docs/DESIGN-SYSTEM.md`
+
+**Decision:** Extract all design decisions from Figma Make export into a framework-agnostic design system reference.
+
+**Why:** 
+- Figma export is production-ready but tied to React implementation
+- Team may implement UI in PixiJS (canvas), React (DOM), or hybrid
+- Design system document decouples visual language from implementation framework
+- Enables single source of truth preventing UI drift between design and implementation
+
+**What Was Extracted (21 sections, 867 lines):**
+1. Color System: 38 theme variables (dark theme, semantic colors, resource colors, player colors, chart colors, OKLCH + hex mappings)
+2. Typography: 6-tier size scale, 4 weights, monospace for numeric data
+3. Spacing System: 8px Tailwind grid, common patterns
+4. Border Radius: 4 sizes (6px–12px)
+5. Effects & Motion: Glass-morphism, transitions, focus rings
+6. Button Variants: 6 variants, 4 sizes
+7. Form Elements: Input, Select, Textarea, Checkbox, Radio, Switch (full specs)
+8. Data Visualization: Progress bars, resource bars, status indicators, badges
+9. Component Inventory: 48 shadcn/ui primitives + 10 game-specific screens
+10. Layout Architecture: HUD (64px), Sidebar (256px desktop → 64px mobile), Chat (320px desktop → bottom sheet mobile)
+11. Iconography: Lucide React 30+ icons (5 sizes, 2px stroke)
+12. Canvas/Map Rendering: PixiJS implementation guidance (colors, hover states, overlays, legend)
+13. Accessibility: WCAG AA compliance (4.5:1 contrast, keyboard nav, screen readers, color independence)
+14. Responsive Design: Mobile-first (375px), breakpoint strategy, grid patterns
+15. Card/Panel Patterns: Standard card, stat card, glass panel, tooltip/popover
+16. Navigation Patterns: Breadcrumb, sidebar nav, tabs
+17. Implementation Notes: PixiJS hex mappings, Tailwind CSS 4 integration, Radix usage
+18. Design Tokens Summary: Quick-reference TypeScript object
+19. Component State Matrix: Button/Input/Card/Nav/Badge/Checkbox/Switch states
+
+**Key Design Decisions:**
+- Dark-first strategy (zinc-950 background)
+- Glass-morphism aesthetic (semi-transparent overlays)
+- Violet (not blue) as primary accent
+- Monospace for all numeric data
+- Touch targets ≥44px (WCAG 2.1)
+- No custom fonts (system font stack)
+
+**Impact:** Gately can implement PixiJS galaxy renderer (Section 15). Pemulis understands UI data requirements. Steeply can validate accessibility/responsiveness. All agents align to single source of truth.
+
+**Next Steps:** Gately uses Design System Section 15 for PixiJS galaxy implementation. Steeply audits UI against spec. Design changes update both Figma and this document.
+
+---
+
+### 2026-03-17: Track Project Plan as GitHub Issues (Hal)
+**Status:** Implemented  
+**Owner:** Hal (Lead)
+
+Project plan tasks from `docs/PROJECT-PLAN.md` are now tracked as GitHub issues in `dkirby-ms/void-market`, with modifications from `docs/FIGMA-CONVERSION-STRATEGY.md` applied.
+
+**Structure:**
+- Issues #3–#12: Phase 0 (10 scaffolding tasks)
+- Issues #13–#48: Phase 1 (36 MVP trading loop tasks)
+- Issues #49–#51: Phase 2–4 epic placeholders
+- 5 milestones (1 per phase)
+- 18 labels: phase (5), squad (7), priority (2), type (4)
+
+**Label Taxonomy:**
+| Category | Labels | Purpose |
+|----------|--------|---------|
+| Phase | `phase:0-scaffold` through `phase:4-polish` | Group by implementation phase |
+| Squad | `squad:hal`, `squad:gately`, `squad:pemulis`, `squad:steeply`, `squad:marathe`, `squad:joelle`, `squad:mario` | Owner assignment |
+| Priority | `priority:critical-path`, `priority:normal` | Identifies blocking tasks |
+| Type | `type:feature`, `type:infrastructure`, `type:docs` | Work category |
+
+**Conventions:**
+- Every issue includes: description, acceptance criteria, dependencies, owner, effort estimate
+- Figma strategy modifications noted inline in affected issues
+- Phase 2–4 are epic-level only—decompose when prior phase ships
+- Dependencies expressed as `Depends on #N` in issue bodies
+
+**Impact:** All squad members reference GitHub issue numbers when creating branches and PRs. The issue board is now the canonical view of project status.
+
+---
+
+### 2026-03-17: User Directive — Figma Design Alignment (Copilot)
+**Status:** Captured  
+**Context:** Design system extraction + conversion strategy
+
+User directive: Align all UI implementation to the Figma Make design export (`docs/void-market.zip`), not the UX brief. The Figma export is React/Tailwind/Radix/shadcn—this needs conversion to the project's PixiJS + DOM overlay architecture.
+
+**Action:** Hal and Mario have completed the analysis and extraction. Decisions above provide the conversion strategy and design system reference.
 
 ---
 

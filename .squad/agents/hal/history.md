@@ -1066,3 +1066,187 @@ User provided redesign package at `docs/designs/redesign/` with React/Tailwind r
 - Team configures GitHub Environments (dev/uat/prod) with Azure OIDC secrets
 - Feature development on `squad/*` branches begins immediately
 - Schedule decisions review post-MVP (30 days) to stress-test architecture and branching
+
+---
+
+## Project Phasing Decisions (2026-03-17)
+
+### What I decided
+
+Broke Void Market into 4 phases with 44 total tasks (Phase 0: 9, Phase 1: 35). Key phasing decisions:
+
+1. **Phase 0 (scaffolding) is separate from Phase 1 (gameplay).** No game logic until the monorepo builds, lints, and connects. ~1 week.
+2. **Phase 1 MVP is the trading loop only.** Galaxy generation, navigation, port trading, turn system, ship progression, persistence, basic auth, PixiJS rendering, HUD. No combat/planets/federations. ~4 weeks.
+3. **Phases 2–4 are NOT decomposed.** Feature-level only. We decompose when Phase 1 ships. Premature planning wastes effort.
+4. **Server and client tracks run in parallel** after shared schemas land. Maximizes throughput.
+5. **Persistence is in Phase 1, not deferred.** Players must survive server restarts for MVP to be meaningful.
+6. **Auth is minimal** — username/password + JWT. No OAuth until later.
+
+### Key dependencies
+
+- Shared schemas (P1-1/2/3) gate both server and client tracks
+- GalaxyRoom (P1-5) is the server critical path
+- Galaxy map renderer (P1-15) is the client critical path
+- Database schema (P1-11) gates all persistence + auth
+- Mario (UX) runs fully parallel — no blockers
+
+### Scope boundaries
+
+- Phase 1 explicitly excludes: combat, planets, federations, NPCs, tech trees, mobile
+- Phase 1 explicitly includes: auth (basic), persistence (full), turn regeneration (not daily reset — uses 1/90s gradual regen per GAME-SYSTEMS.md)
+- Later phases will be decomposed based on Phase 1 learnings
+
+### Artifact
+
+- `docs/PROJECT-PLAN.md` — Full breakdown with task IDs, owners, dependencies, exit criteria
+- `.squad/decisions/inbox/hal-project-phasing.md` — Decision record for team
+
+## Learnings: Figma Design Conversion Strategy (2026-03-17)
+
+**Context:** Analyzed Figma Make export at `/tmp/void-market-figma/` to determine how to convert React/Tailwind prototype into PixiJS + Colyseus architecture.
+
+**Key Decision:** Adopt React for DOM overlays. Figma export provides ~3,000 lines of production-ready React + 48 shadcn/ui components (Radix + Tailwind). Rewriting to vanilla TypeScript would cost 3-4 weeks for negligible benefit (~35KB bundle size saving). Architecture docs never mandated vanilla TS—"DOM overlay" was framework-agnostic.
+
+**Hybrid Architecture Validated:**
+- **PixiJS:** Galaxy map canvas (WebGL for 500+ sectors) — rewrite Figma's Canvas 2D logic
+- **React:** Everything else (HUD, trading, chat, forms, alliance) — adapt Figma components + wire Colyseus state
+- This matches UX-BRIEF.md "Hybrid Canvas/DOM Architecture" requirement
+
+**Component Mapping:**
+- GalaxyMap.tsx: Rewrite (Canvas 2D → PixiJS WebGL, 2-3 days)
+- GameLayout, HUD, Sidebar, Chat, Trading, Sector/Planet/Fleet/Alliance Views: Keep + adapt (wire Colyseus state)
+- shadcn/ui (48 components): Keep as-is, no changes needed
+- React Router 7: Keep as-is (already latest stable)
+
+**What We Extract:**
+- TypeScript interfaces from `gameState.ts` → map to Colyseus Schema classes (Pemulis P1-1)
+- Design tokens from `theme.css` → dark zinc-950 base, violet accents, oklch colors
+- Layout structure → GameLayout wrapper, persistent HUD, toggleable Sidebar/Chat
+- Icons from lucide-react (~30 icons, 3KB gzipped, ISC license)
+
+**What We Drop:**
+- motion, canvas-confetti, recharts, MUI, react-dnd, vaul (demo libraries, not needed for MVP)
+- Saves ~50KB bundle size
+
+**Timeline Impact:** Accelerates Phase 1 by ~5.5 days (6 days saved on client UI - 3 hours for React setup). Gately's tasks (P1-18 through P1-23) significantly faster with existing components.
+
+**Colyseus + React Pattern:**
+```typescript
+useColyseusState(room.state.player, ['turns', 'credits']) → re-render on delta sync
+room.send('trade:buy', { orderId }) → server validates → state syncs back
+```
+No local optimistic updates in Phase 1 (server is source of truth).
+
+**Bundle Size:** ~260KB gzipped (React 45KB + Radix 40KB + PixiJS 120KB + Colyseus 25KB + utilities 30KB). Acceptable for game client.
+
+**Risk Mitigation:** Accept 50-100ms Colyseus → React state sync latency. Server authoritative. Optimistic updates only if users complain in Phase 2+.
+
+**Key Files:**
+- `/tmp/void-market-figma/src/app/components/GalaxyMap.tsx` — canvas 2D logic (camera, zoom, sector rendering) to port to PixiJS
+- `/tmp/void-market-figma/src/app/lib/gameState.ts` — TypeScript interfaces for Colyseus schemas
+- `/tmp/void-market-figma/src/styles/theme.css` — design tokens (oklch colors, spacing, typography)
+- `/tmp/void-market-figma/src/app/components/ui/` — 48 shadcn/ui components (copy directly)
+- `/tmp/void-market-figma/package.json` — dependencies (React 18.3.1, Radix UI, Tailwind CSS 4, lucide-react 0.487.0)
+
+**Decision Document:** `docs/FIGMA-CONVERSION-STRATEGY.md` (comprehensive strategy with component mapping, dependency analysis, PROJECT-PLAN.md impact, Colyseus integration patterns)
+
+**User Preferences Observed:**
+- Prefers direct, decisive recommendations over analysis paralysis
+- Values pragmatic trade-offs (speed > bundle size purity)
+- Expects comprehensive strategy docs with risk assessment, alternatives considered, success criteria
+- Wants explicit task modifications to PROJECT-PLAN.md
+
+**Next Actions:**
+- Gately: Execute P0-4.1 (React + shadcn/ui setup, copy Figma UI components)
+- Pemulis: Use Figma `gameState.ts` as reference for Colyseus schemas (P1-1)
+- Mario: Review Figma theme vs. UX-BRIEF.md for consistency
+
+---
+
+### Session: GitHub Issues Creation (2026-03-17)
+
+**What happened:** Created full GitHub issue board from PROJECT-PLAN.md + FIGMA-CONVERSION-STRATEGY.md modifications.
+
+**Created:**
+- 18 labels (5 phase, 7 squad, 2 priority, 3 type)
+- 5 milestones (Phase 0-4)
+- 49 GitHub issues (#3-#51):
+  - Phase 0: 10 issues (#3-#12) — scaffolding tasks
+  - Phase 1: 36 issues (#13-#48) — MVP trading loop tasks
+  - Phase 2-4: 3 epic issues (#49-#51) — future phase placeholders
+
+**Issue Number Map:**
+| Task | Issue | Owner |
+|------|-------|-------|
+| P0-1 | #3 | Pemulis |
+| P0-2 | #4 | Pemulis |
+| P0-3 | #5 | Pemulis |
+| P0-4 | #6 | Gately |
+| P0-4.1 | #7 | Gately |
+| P0-5 | #8 | Marathe |
+| P0-6 | #9 | Marathe |
+| P0-7 | #10 | Marathe |
+| P0-8 | #11 | Marathe |
+| P0-9 | #12 | Steeply |
+| P1-1 | #13 | Pemulis |
+| P1-2 | #14 | Pemulis |
+| P1-3 | #15 | Pemulis |
+| P1-4 | #18 | Pemulis |
+| P1-5 | #19 | Pemulis |
+| P1-6 | #21 | Pemulis |
+| P1-7 | #22 | Pemulis |
+| P1-8 | #23 | Pemulis |
+| P1-9 | #20 | Pemulis |
+| P1-10 | #24 | Pemulis |
+| P1-11 | #25 | Pemulis |
+| P1-12 | #26 | Pemulis |
+| P1-13 | #27 | Pemulis |
+| P1-14 | #28 | Pemulis |
+| P1-15 | #29 | Gately |
+| P1-16 | #30 | Gately |
+| P1-17 | #31 | Gately |
+| P1-18 | #32 | Gately |
+| P1-19 | #33 | Gately |
+| P1-20 | #34 | Gately |
+| P1-21 | #35 | Gately |
+| P1-22 | #36 | Gately |
+| P1-23 | #37 | Gately |
+| P1-24 | #16 | Mario |
+| P1-24.1 | #17 | Mario+Gately |
+| P1-25 | #38 | Mario |
+| P1-26 | #39 | Mario |
+| P1-27 | #40 | Steeply |
+| P1-28 | #41 | Steeply |
+| P1-29 | #42 | Steeply |
+| P1-30 | #43 | Steeply |
+| P1-31 | #44 | Steeply |
+| P1-32 | #45 | Steeply |
+| P1-33 | #46 | Steeply |
+| P1-34 | #47 | Joelle |
+| P1-35 | #48 | Joelle |
+| Phase 2 | #49 | Team |
+| Phase 3 | #50 | Team |
+| Phase 4 | #51 | Team |
+
+**Label Taxonomy:**
+- Phase: `phase:0-scaffold` through `phase:4-polish`
+- Squad: `squad:{agent-name}` (7 agents)
+- Priority: `priority:critical-path`, `priority:normal`
+- Type: `type:feature`, `type:infrastructure`, `type:docs`
+
+**Milestone IDs:** Phase 0=1, Phase 1=2, Phase 2=3, Phase 3=4, Phase 4=5
+
+**Figma Strategy Modifications Applied:**
+- P0-4 updated: includes React 18 setup
+- P0-4.1 added: shadcn/ui + Tailwind setup (Gately, 2hr)
+- P1-18: 1 day → 6 hours (Figma SectorView.tsx)
+- P1-19: 1 day → 2 hours (Figma HUD.tsx)
+- P1-20: 2 days → 1 day (Figma TradingView.tsx)
+- P1-21: 1 day → 4 hours (Figma FleetView.tsx)
+- P1-22: 0.5 day → 1 hour (sonner library)
+- P1-23: 1 day → 4 hours (shadcn/ui forms)
+- P1-24.1 added: Extract design tokens (Mario+Gately, 1hr)
+
+**Dependencies Cross-Referenced:** All issue bodies contain `Depends on #N` references to actual GitHub issue numbers.
+
+**Branch Convention:** Feature branches should use `squad/{issue-number}-{slug}` per existing branching strategy.

@@ -61,6 +61,49 @@
 
 ---
 
+## Cross-Agent Update — 2026-03-17: React Adoption & Design System Alignment
+
+**From:** Squad Scribe (Hal + Mario session)  
+**Event:** Figma design analysis complete; React adoption decision + design system reference
+
+**What Changed:**
+- **Hal Decision:** Adopt React 18 for DOM overlays (hybrid PixiJS + React model)
+  - Figma export analyzed: 6 screens, 48 shadcn/ui components, ~3,000 lines working React code
+  - Cost-benefit: 3-4 week vanilla TS rewrite vs. ~5.5 day Phase 1 acceleration via React adoption
+  - Bundle cost: ~35KB (acceptable for game client)
+  - Effort savings: 15+ days (component library, forms, accessibility)
+
+- **Mario Decision:** Design system reference extracted and documented
+  - Framework-agnostic (can implement in PixiJS, DOM, React, or hybrid)
+  - 21 sections: colors (OKLCH + hex), typography, spacing, 58 components, layout, accessibility, responsive design
+  - Single source of truth preventing UI drift
+  - Section 15: PixiJS implementation guidance (canvas colors, hover states, rendering notes)
+
+**Your Task (P0-4.1):**
+- Set up React 18.3.1 + React Router 7.13.0
+- Copy Tailwind CSS 4.1.12 configuration from Figma export
+- Install Radix UI primitives (20 packages) + lucide-react 0.487.0
+- Copy shadcn/ui component library (48 primitives) to `client/src/components/ui/`
+- Integrate PixiJS 8.0.0 + pixi-viewport 5.0.0 for canvas rendering
+
+**Your Implementation Guide:**
+- GameLayout.tsx: Persistent wrapper with HUD (64px top), Sidebar (256px → 64px mobile), Chat (320px → bottom sheet)
+- GalaxyMap.tsx: Rewrite to PixiJS using Section 15 colors and rendering patterns
+- Other screens: Use React + Tailwind as-is (HUD, SectorView, PlanetView, FleetView, TradingView, AllianceView)
+
+**Related Decisions:**
+- `.squad/decisions.md` — "Figma Design System Conversion Strategy" (Hal)
+- `.squad/decisions.md` — "Design System Reference" (Mario)
+- `docs/FIGMA-CONVERSION-STRATEGY.md` — Full strategy (728 lines)
+- `docs/DESIGN-SYSTEM.md` — Full design reference (867 lines)
+
+**Coordination:**
+- Pemulis: Use Figma `gameState.ts` as reference for Colyseus schemas
+- Mario: Verify Figma theme aligns with UX-BRIEF.md decisions
+- Phase 1 acceleration: 4 weeks → 3.5 weeks (critical path: Pemulis's server tasks remain bottleneck)
+
+---
+
 ## 2026-03-15: Session Resilience — Client-Side Reconnection Implementation
 
 **From:** Squad Scribe  
@@ -940,3 +983,38 @@ Risk renderer rendering phase can now adopt this pattern for armies/territories.
 - Colyseus state sync testing with movement commands (from Hal's architecture)
 - Coordinate with team on Colyseus version and schema patterns
 
+
+## Cross-Agent Context (2026-03-17) — Project Plan Published
+
+**From:** Squad Scribe  
+**Event:** Hal completed 4-phase project breakdown with 44 concrete tasks
+
+**Project Plan:** `docs/PROJECT-PLAN.md` now live with full task assignments
+
+**Your Task Load (Phase 0–1):** 9 client tasks  
+- **P0 (2 tasks):** Vite client scaffold, PixiJS v8 demo setup
+- **P1 (7 tasks):** Galaxy map renderer (critical path), HUD overlay, sector/planet views, responsive layout, WebSocket sync, player UI, action feedback
+
+**Critical Path:** Galaxy map renderer (P1-15) unblocks all other client features. You block on Pemulis's schema definitions before meaningful rendering.
+
+**Key Dependencies:**
+- Pemulis schemas (P1-1/2/3) needed before your rendering work
+- Mario's UX brief (`docs/UX-BRIEF.md`) available for screen inventory and design guidance
+- Steeply coordinates on canvas testing and PixiJS mocking
+
+**Read:** `docs/PROJECT-PLAN.md` for full task breakdown, sizing, and dependencies.
+
+## Cross-Agent Update (2026-03-17) — Project Tasks as GitHub Issues
+
+**From:** Squad Scribe  
+**Event:** Hal created GitHub issues from PROJECT-PLAN.md
+
+**Update:** All 44 project plan tasks are now tracked as GitHub issues #3–#51 with squad:{member} labels.
+
+**Your Issues:** Filter `squad:gately` in GitHub issues. Phase 0–1 client tasks are assigned with dependencies and acceptance criteria.
+
+**Branching:** Use `squad/{issue-number}-{slug}` convention when creating feature branches. Links commits to issues for traceability.
+
+**Impact:** Project status is now visible in GitHub issues board. Milestones track phase progress. Dependency graph shows blocking relationships.
+
+**Reference:** `.squad/decisions.md` → "Track Project Plan as GitHub Issues" for label taxonomy and conventions.

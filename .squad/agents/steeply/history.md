@@ -21,6 +21,45 @@
 
 ---
 
+## Cross-Agent Update — 2026-03-17: React Adoption & Design System Alignment
+
+**From:** Squad Scribe (Hal + Mario session)  
+**Event:** Figma design analysis complete; React adoption decision + design system reference
+
+**What Changed:**
+- **Hal Decision:** Adopt React 18 for DOM overlays (hybrid PixiJS + React model)
+  - Figma export: 6 screens, 48 shadcn/ui components, ~3,000 lines React code
+  - Cost-benefit: 3-4 week vanilla TS rewrite vs. ~5.5 day Phase 1 acceleration
+  - React integration accelerates Phase 1 (4 weeks → 3.5 weeks)
+
+- **Mario Decision:** Design system reference extracted and documented
+  - Framework-agnostic reference (colors, typography, spacing, 58 components, layout, accessibility)
+  - Single source of truth preventing UI drift
+  - Section 16: Accessibility (WCAG AA compliance, keyboard nav, screen readers)
+
+**Your Task (Design Validation):**
+- Test coverage for UI accessibility (WCAG AA compliance)
+  - Contrast ratios: all text ≥ 4.5:1
+  - Keyboard navigation: focus management, arrow keys, Tab/Shift+Tab
+  - Screen reader support: semantic HTML, ARIA labels
+  - Color independence: status colors paired with text/icons, not color-only
+- Responsive testing: 375px (mobile), 768px (tablet), 1024px (desktop), 1440px (wide)
+- Touch targets: ≥44px height per WCAG 2.1 (mobile), ≥36px (desktop)
+- PixiJS canvas rendering: 60 FPS desktop, 30 FPS mobile
+- State sync: no Colyseus desyncs, 50-100ms latency acceptable
+
+**Related Decisions:**
+- `.squad/decisions.md` — "Figma Design System Conversion Strategy" (Hal)
+- `.squad/decisions.md` — "Design System Reference" (Mario)
+- `docs/DESIGN-SYSTEM.md` — Section 16 (Accessibility)
+
+**Coordination:**
+- Gately: Implementing React + Tailwind CSS 4 setup (P0-4.1)
+- Pemulis: Using Figma gameState.ts for Colyseus schemas (P1-1)
+- Phase 1 acceleration: 4 weeks → 3.5 weeks
+
+---
+
 ## Learnings
 - Lobby gameType coverage lives in `server/src/__tests__/lobby-pregame.test.ts`; the useful seams are the mocked `gameRegistry` responses plus `GAME_LIST`/`GAME_UPDATED` payload assertions to verify type propagation and player-limit clamping.
 - Checkers Playwright coverage has to follow the current lobby UI, not the old table flow: open `#create-game-modal`, scope joins to the unique `.active-game-card`, and assert the visible lobby shell as "Board Game Lounge" before using the `?e2e=1` harness for in-game state.
@@ -396,3 +435,38 @@ Finishing agent should convert .todo() stubs to executable tests using Pemulis/G
 - Establish test coverage targets for trading loop MVP
 - Coordinate with Gately on PixiJS rendering testability and canvas mocking strategies
 
+
+## Cross-Agent Context (2026-03-17) — Project Plan Published
+
+**From:** Squad Scribe  
+**Event:** Hal completed 4-phase project breakdown with 44 concrete tasks
+
+**Project Plan:** `docs/PROJECT-PLAN.md` now live with full task assignments
+
+**Your Task Load (Phase 0–1):** 7 test tasks  
+- **P0 (1 task):** Jest/Vitest scaffold with coverage config
+- **P1 (6 tasks):** Unit tests (schemas, room logic, economy), integration tests (trading, persistence), client canvas mocking, E2E trading scenarios
+
+**Test-First Approach:** Tests follow implementation (no mandate for TDD), but required before Phase 1 exit. Canvas rendering mocking (Gately) and Colyseus state sync (Pemulis) are key blockers.
+
+**Key Dependencies:**
+- Pemulis stability before you test server logic
+- Gately's canvas architecture before you mock PixiJS
+- Marathe's CI/CD in place (P0-7) before you set coverage gates
+
+**Read:** `docs/PROJECT-PLAN.md` for full task breakdown, sizing, and dependencies.
+
+## Cross-Agent Update (2026-03-17) — Project Tasks as GitHub Issues
+
+**From:** Squad Scribe  
+**Event:** Hal created GitHub issues from PROJECT-PLAN.md
+
+**Update:** All 44 project plan tasks are now tracked as GitHub issues #3–#51 with squad:{member} labels.
+
+**Your Issues:** Filter `squad:steeply` in GitHub issues. Phase 0–1 test tasks are assigned with dependencies and acceptance criteria.
+
+**Branching:** Use `squad/{issue-number}-{slug}` convention when creating feature branches. Links commits to issues for traceability.
+
+**Impact:** Project status is now visible in GitHub issues board. Milestones track phase progress. Dependency graph shows blocking relationships.
+
+**Reference:** `.squad/decisions.md` → "Track Project Plan as GitHub Issues" for label taxonomy and conventions.
