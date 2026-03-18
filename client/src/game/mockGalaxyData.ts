@@ -27,6 +27,14 @@ export interface GalaxyData {
   currentSectorId: number;
 }
 
+/** Ship placement data used by ShipManager. */
+export interface MockShipData {
+  playerId: string;
+  displayName: string;
+  sectorId: number;
+  isLocal: boolean;
+}
+
 const SECTOR_COUNT = 500;
 const PORT_PROBABILITY = 0.4;
 const MIN_WARPS = 1;
@@ -125,4 +133,43 @@ export function generateMockGalaxy(): GalaxyData {
     currentPlayerId: "local-player",
     currentSectorId: 1,
   };
+}
+
+/**
+ * Generate mock ship placements matching the players scattered
+ * through the mock galaxy. Returns data consumed by ShipManager.
+ */
+export function generateMockShips(galaxyData: GalaxyData): MockShipData[] {
+  return [
+    {
+      playerId: "local-player",
+      displayName: "You",
+      sectorId: galaxyData.currentSectorId,
+      isLocal: true,
+    },
+    {
+      playerId: "npc-42",
+      displayName: "Trader Zara",
+      sectorId: 42,
+      isLocal: false,
+    },
+    {
+      playerId: "npc-100",
+      displayName: "Capt. Orion",
+      sectorId: 100,
+      isLocal: false,
+    },
+    {
+      playerId: "npc-250",
+      displayName: "Drifter Rex",
+      sectorId: 250,
+      isLocal: false,
+    },
+    {
+      playerId: "npc-400",
+      displayName: "Smuggler Kai",
+      sectorId: 400,
+      isLocal: false,
+    },
+  ];
 }
