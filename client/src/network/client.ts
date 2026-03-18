@@ -205,3 +205,10 @@ export function sendTrade(
     buying,
   });
 }
+
+export function sendUpgradeShip(targetShipClass: string): void {
+  roomInstance?.send(CLIENT_MSG.UPGRADE_SHIP, {
+    type: CLIENT_MSG.UPGRADE_SHIP,
+    targetShipClass,
+  });
+}

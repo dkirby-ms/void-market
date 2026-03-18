@@ -35,6 +35,10 @@ vi.mock("../hooks/useGameState.js", () => ({
   }),
 }));
 
+vi.mock("../hooks/useGameNotifications.js", () => ({
+  useGameNotifications: vi.fn(),
+}));
+
 vi.mock("../game/PixiApp.js", () => ({
   initPixiApp: vi.fn().mockResolvedValue({
     app: {},
@@ -51,6 +55,7 @@ vi.mock("../network/client.js", () => ({
   sendDock: vi.fn(),
   sendUndock: vi.fn(),
   sendTrade: vi.fn(),
+  sendUpgradeShip: vi.fn(),
   subscribeToRoom: vi.fn().mockReturnValue(vi.fn()),
   subscribeToStatus: vi.fn().mockImplementation((cb: (s: string) => void) => {
     cb("disconnected");
@@ -93,6 +98,16 @@ vi.mock("../components/HUD.js", () => ({
 vi.mock("../components/SectorDetail.js", () => ({
   SectorDetail: () =>
     React.createElement("div", { "data-testid": "sector-detail" }),
+}));
+
+vi.mock("../components/TradingPanel.js", () => ({
+  TradingPanel: () =>
+    React.createElement("div", { "data-testid": "trading-panel" }),
+}));
+
+vi.mock("../components/GameToaster.js", () => ({
+  GameToaster: () =>
+    React.createElement("div", { "data-testid": "game-toaster" }),
 }));
 
 import { App } from "../App.js";

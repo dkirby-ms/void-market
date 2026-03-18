@@ -1,10 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { AuthScreen } from "./components/AuthScreen.js";
 import { ConnectionStatusBadge } from "./components/ConnectionStatusBadge.js";
+import { GameToaster } from "./components/GameToaster.js";
 import { HUD } from "./components/HUD.js";
 import { SectorDetail } from "./components/SectorDetail.js";
 import { TradingPanel } from "./components/TradingPanel.js";
 import { useAuth } from "./hooks/useAuth.js";
+import { useGameNotifications } from "./hooks/useGameNotifications.js";
 import { useGameState } from "./hooks/useGameState.js";
 import type { SectorSnapshot } from "./hooks/useGameState.js";
 import { initPixiApp } from "./game/PixiApp.js";
@@ -19,6 +21,7 @@ export function App(): React.JSX.Element {
   const [selectedSector, setSelectedSector] = useState<SectorSnapshot | null>(null);
 
   const gameState = useGameState();
+  useGameNotifications();
 
   // Keep a ref to the PixiJS click handler so it always uses latest closure
   const sectorClickRef = useRef<((sectorId: number) => void) | null>(null);
@@ -188,6 +191,8 @@ export function App(): React.JSX.Element {
           onSelectSector={handleSelectSector}
         />
       )}
+
+      <GameToaster />
     </>
   );
 }
