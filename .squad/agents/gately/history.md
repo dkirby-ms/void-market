@@ -1040,3 +1040,25 @@ Risk renderer rendering phase can now adopt this pattern for armies/territories.
 - ESLint `projectService: true` can't discover non-composite tsconfigs in a monorepo; explicit per-workspace `project` paths work reliably
 - `composite: false` in client tsconfig requires also setting `declaration: false` and `declarationMap: false` (inherited from root)
 - npm workspace installs can sometimes not persist package.json changes; always verify after install
+
+### 2026-03-18: Tailwind CSS 4 + shadcn/ui Setup (Issue #7, PR #62)
+
+**What I built:**
+- Tailwind CSS 4 with `@tailwindcss/vite` plugin (not postcss — Vite plugin handles it)
+- Dark theme CSS custom properties: 38 OKLCH color variables from DESIGN-SYSTEM.md (light + dark modes)
+- `@theme inline` block mapping CSS vars to Tailwind color utilities
+- `cn()` utility (clsx + tailwind-merge) at `client/src/lib/utils.ts`
+- 5 shadcn/ui components: Button (6 variants, 4 sizes), Card (7 sub-components), Badge, Input, Label
+- 20 Radix UI primitives installed, lucide-react icons, tw-animate-css
+- `dark` class on `<html>` for dark-first rendering strategy
+
+**Key technical decisions:**
+- Used `@import "tailwindcss"` (TW4 syntax) not `@tailwind` directives (TW3)
+- `@custom-variant dark (&:is(.dark *))` for class-based dark mode
+- Radix UI primitives installed upfront (20 packages) — minimal overhead, avoids per-component install friction
+- Only 5 components initially; rest added as-needed in Phase 1
+
+**Gotchas:**
+- npm workspace installs (`--workspace=client`) sometimes silently don't save to package.json — edit package.json directly and run `npm install` from root
+- `@tailwindcss/vite` plugin must come before `@vitejs/plugin-react` in vite plugins array
+- Files created via tooling may not persist across git stash/checkout — always verify existence after branch switches
