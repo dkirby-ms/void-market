@@ -946,3 +946,4 @@ permissions:
 - The existing CI was already well-structured; this was an enhancement pass, not a rewrite
 
 **PR:** #57 → `dev`
+- 2026-03-18: Issue #11 — Multi-stage Dockerfile for production deployment. Two-stage node:22-slim build: stage 1 does full npm ci + npm run build (tsc + vite), stage 2 copies only built artifacts with production deps. HEALTHCHECK curls /health endpoint. .dockerignore excludes node_modules, .git, docs, coverage, tests. Docker build verified locally — container starts and /health returns 200. Image ~658MB (node:22-slim + all workspace production deps). Server does NOT yet serve client static files — follow-up needed for Express static middleware. PR #60 → dev.
