@@ -56,21 +56,28 @@ interface DevTokenResponse {
  * Returns the token and user on success, or null if unavailable.
  */
 async function tryDevAutoLogin(): Promise<DevTokenResponse | null> {
-  try {
-    const res = await fetch(`${API_BASE}/dev-token`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-    });
-    if (!res.ok) return null;
-    const body = (await res.json()) as Record<string, unknown>;
-    const user = body.user as { id?: string; username?: string } | undefined;
-    if (typeof body.accessToken === "string" && user?.id && user.username) {
-      return { accessToken: body.accessToken, user: { id: user.id, username: user.username } };
+  // Retry a few times — server may still be starting when client mounts
+  for (let attempt = 0; attempt < 5; attempt++) {
+    try {
+      const res = await fetch(`${API_BASE}/dev-token`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!res.ok) return null;
+      const body = (await res.json()) as Record<string, unknown>;
+      const user = body.user as { id?: string; username?: string } | undefined;
+      if (typeof body.accessToken === "string" && user?.id && user.username) {
+        return { accessToken: body.accessToken, user: { id: user.id, username: user.username } };
+      }
+      return null;
+    } catch {
+      // Server not ready yet — wait and retry
+      if (attempt < 4) {
+        await new Promise((r) => setTimeout(r, 1000));
+      }
     }
-    return null;
-  } catch {
-    return null;
   }
+  return null;
 }
 
 interface AuthResponse {
