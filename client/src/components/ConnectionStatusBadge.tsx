@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import type { ConnectionStatus } from "../network/client.js";
-import { connectToServer } from "../network/client.js";
+import { subscribeToStatus } from "../network/client.js";
 
 const STATUS_CONFIG: Record<ConnectionStatus, { label: string; color: string; pulse: boolean }> = {
   disconnected: { label: "Disconnected", color: "#ef4444", pulse: false },
-  connecting: { label: "Connecting…", color: "#a78bfa", pulse: true },
+  connecting: { label: "Connecting\u2026", color: "#a78bfa", pulse: true },
   connected: { label: "Connected", color: "#22c55e", pulse: false },
+  reconnecting: { label: "Reconnecting\u2026", color: "#facc15", pulse: true },
   error: { label: "Connection Error", color: "#ef4444", pulse: false },
 };
 
@@ -14,9 +15,9 @@ export function ConnectionStatusBadge(): React.JSX.Element {
   const [errorMsg, setErrorMsg] = useState<string>();
 
   useEffect(() => {
-    void connectToServer((newStatus, err) => {
+    return subscribeToStatus((newStatus, err) => {
       setStatus(newStatus);
-      if (err) setErrorMsg(err);
+      setErrorMsg(err);
     });
   }, []);
 
