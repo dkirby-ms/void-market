@@ -7,11 +7,20 @@
   "scripts": {
     "build": "tsc --build",
     "clean": "tsc --build --clean",
+    "dev": "tsx watch src/index.ts",
     "lint": "eslint src/",
+    "start": "node dist/index.js",
     "test": "vitest run",
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@void-market/shared": "*"
+    "@colyseus/core": "^0.17.39",
+    "@colyseus/ws-transport": "^0.17.9",
+    "@void-market/shared": "*",
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "tsx": "^4.21.0"
   }
 }

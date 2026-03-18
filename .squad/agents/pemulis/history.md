@@ -732,3 +732,47 @@ Turn-based gameplay in real-time multiplayer framework = hybrid model where disc
 **Impact:** Project status is now visible in GitHub issues board. Milestones track phase progress. Dependency graph shows blocking relationships.
 
 **Reference:** `.squad/decisions.md` → "Track Project Plan as GitHub Issues" for label taxonomy and conventions.
+
+## Cross-Agent Update (2026-03-18) — Wave 2 Complete
+
+**From:** Squad Scribe  
+**Event:** Pemulis, Marathe, Steeply Wave 2 merged to dev
+
+**Wave 2 Status:** ✅ All Phase 0 foundation tasks complete and merged
+
+**Your Outcomes:**
+- PR #54 (shared package) merged
+- Enums, constants, interfaces, and Colyseus schemas now in shared package
+- 100% test coverage on shared
+- Pemulis tasks #5 (Server scaffold) unblocked — no dependencies
+
+**Marathe Outcomes:**
+- PR #55 (ESLint + Prettier) merged
+- Colyseus `@type` decorators now ESLint-compliant via `ignoreProperties: true`
+- All workspaces pass lint gates
+
+**Steeply Outcomes:**
+- PR #53 (Vitest infrastructure) merged
+- 12 tests passing, v8 coverage ready, 80% threshold enforced
+- Shared test utils available for your server tests
+
+**Blocker Status:** None remaining for Phase 1. Gately and client track ready to begin when server schemas stable.
+
+**Next:** Dispatch to issue #5 (Server scaffold). Pemulis can now implement GalaxyRoom and entity managers.
+
+## Learnings — Issue #5: Server Scaffold (2026-03-18)
+
+**What was built:**
+- Colyseus 0.17 server with `defineServer`/`defineRoom` pattern (the modern declarative API)
+- Express integration via `WebSocketTransport.getExpressApp()` (transport owns the Express instance)
+- GalaxyRoom using `GalaxyState` from `@void-market/shared` as room state
+- `/health` endpoint, `PORT` env var, `npm run dev` (tsx watch), `npm start` (compiled)
+
+**Technical notes:**
+- Colyseus 0.17 deprecates `this.setState()` — use `this.state = new State()` instead
+- `@colyseus/core` + `@colyseus/ws-transport` is the minimal install (avoid the `colyseus` meta-package which pulls redis, auth, playground, etc.)
+- Express 5 is the default now and works with ws-transport
+- `defineServer` takes an `express` callback for custom routes — clean separation
+- Room generic uses `Room<{ state: GalaxyState }>` pattern for type-safe state
+
+**Branch:** `squad/5-server-scaffold` → PR #58 → `dev`

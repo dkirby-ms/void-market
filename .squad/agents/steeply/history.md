@@ -470,3 +470,30 @@ Finishing agent should convert .todo() stubs to executable tests using Pemulis/G
 **Impact:** Project status is now visible in GitHub issues board. Milestones track phase progress. Dependency graph shows blocking relationships.
 
 **Reference:** `.squad/decisions.md` → "Track Project Plan as GitHub Issues" for label taxonomy and conventions.
+
+## Cross-Agent Update (2026-03-18) — Wave 2 Complete
+
+**From:** Squad Scribe  
+**Event:** Pemulis, Marathe, Steeply Wave 2 merged to dev
+
+**Wave 2 Status:** ✅ All Phase 0 foundation tasks complete and merged
+
+**Your Outcomes:**
+- PR #53 (Vitest infrastructure) merged
+- 12 tests on shared package, 100% coverage, v8 threshold (80%) enforced
+- Shared test utils (factories, mocks, fixtures) ready for server/client tests
+- Root `test:coverage` gate ready for CI pipeline
+
+**Pemulis Outcomes:**
+- PR #54 (shared package) merged
+- Typed fixtures available in shared/src/test-utils
+- Server tests can begin once Pemulis stabilizes room logic (#5, #13)
+
+**Marathe Outcomes:**
+- PR #55 (ESLint + Prettier) merged
+- No lint blockers for test code; test files get relaxed void-expression rules
+- CI lint gates ready; awaiting your coverage gate in dev PR checks
+
+**Blocker Status:** None. Phase 1 server/client tracks unblocked. Pemulis tests can begin as GalaxyRoom stabilizes.
+
+**Next:** Phase 1 test tasks (#20–#26) ready to begin. Coordinate with Pemulis on test timing (after room logic stable, before persistence layer).
