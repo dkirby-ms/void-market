@@ -7,6 +7,7 @@
 import { Container, Graphics } from "pixi.js";
 import { Canvas, Alpha } from "@void-market/shared";
 import { SectorNode, type SectorClickHandler } from "./SectorNode.js";
+import { ShipManager, type ShipData } from "./ShipManager.js";
 import type { GalaxyData, SectorData } from "./mockGalaxyData.js";
 
 export class GalaxyRenderer extends Container {
@@ -14,6 +15,7 @@ export class GalaxyRenderer extends Container {
   private sectorNodes = new Map<number, SectorNode>();
   private galaxyData: GalaxyData | undefined;
   private onSectorClick: SectorClickHandler | undefined;
+  readonly shipManager: ShipManager;
 
   constructor(onSectorClick?: SectorClickHandler) {
     super();
@@ -23,6 +25,9 @@ export class GalaxyRenderer extends Container {
     this.warpGraphics = new Graphics();
     this.addChild(this.warpGraphics);
 
+    // Ship layer (drawn above sectors)
+    this.shipManager = new ShipManager();
+
     // Enable culling so off-screen children skip rendering
     this.cullable = true;
     this.cullableChildren = true;
@@ -31,6 +36,7 @@ export class GalaxyRenderer extends Container {
   /** Render or re-render the full galaxy from data. */
   setGalaxyData(data: GalaxyData): void {
     this.galaxyData = data;
+    this.shipManager.setGalaxyData(data);
     this.rebuildAll();
   }
 
@@ -51,6 +57,9 @@ export class GalaxyRenderer extends Container {
     for (const sector of this.galaxyData.sectors.values()) {
       this.addSectorNode(sector);
     }
+
+    // Ship layer sits above sector nodes
+    this.addChild(this.shipManager.container);
   }
 
   private drawWarps(sectors: Map<number, SectorData>): void {
@@ -149,5 +158,23 @@ export class GalaxyRenderer extends Container {
       minY: minY - padding,
       maxY: maxY + padding,
     };
+  }
+
+  /**
+   * Add ships from data (call after setGalaxyData).
+   * Typically used to populate initial ship state from mock or Colyseus data.
+   */
+  addShips(ships: ShipData[]): void {
+    for (const ship of ships) {
+      this.shipManager.addShip(ship);
+    }
+  }
+
+  /**
+   * Per-frame update for ship animations.
+   * @param dtSeconds delta time in seconds.
+   */
+  update(dtSeconds: number): void {
+    this.shipManager.update(dtSeconds);
   }
 }
