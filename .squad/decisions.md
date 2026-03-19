@@ -501,9 +501,20 @@ Multi-stage Dockerfile using `node:22-slim` (Debian-based, not Alpine). Producti
 
 ---
 
+## Inbox Updates — 2026-03-19
+
+**Merged decisions from inbox:**
+- `gately-galaxy-renderer.md` → "Galaxy Map Renderer Architecture" 
+- `pemulis-galaxy-generator.md` → "Galaxy Generator Algorithm (Pemulis, #18)"
+
+**Status:** Inbox consolidated, entries merged into canonical decisions.md. Inbox files marked for deletion.
+
+---
+
 ## Related Documents
 
 - `.squad/log/2026-03-18T001000Z-phase0-complete.md` — Phase 0 completion session log
+- `.squad/log/2026-03-19T002400Z-ci-triage.md` — CI triage and ESLint fix routing
 - `.squad/orchestration-log/` — Agent work logs (Wave 3 + Wave 4)
 - `docs/ARCHITECTURE.md` — Server architecture (Colyseus, rooms, database)
 - `docs/GAME-SYSTEMS.md` — Gameplay mechanics (turns, economy, alliances)
