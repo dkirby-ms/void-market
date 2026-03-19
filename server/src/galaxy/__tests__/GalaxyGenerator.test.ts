@@ -99,9 +99,7 @@ describe("GalaxyGenerator", () => {
           );
           continue;
         }
-        const backLink = neighbor.warps.toArray
-          ? neighbor.warps.toArray().includes(sector.sectorId)
-          : Array.from(neighbor.warps).includes(sector.sectorId);
+        const backLink = Array.from(neighbor.warps).includes(sector.sectorId);
         if (!backLink) {
           violations.push(
             `Sector ${sector.sectorId} → ${neighborId}: no return warp`,
@@ -115,9 +113,7 @@ describe("GalaxyGenerator", () => {
   test("no sector has a warp to itself", () => {
     const selfWarps: number[] = [];
     sectors.forEach((sector) => {
-      const warpsArray = sector.warps.toArray
-        ? sector.warps.toArray()
-        : Array.from(sector.warps);
+      const warpsArray = Array.from(sector.warps);
       if (warpsArray.includes(sector.sectorId)) {
         selfWarps.push(sector.sectorId);
       }
@@ -128,9 +124,7 @@ describe("GalaxyGenerator", () => {
   test("no sector has duplicate warp connections", () => {
     const dupes: string[] = [];
     sectors.forEach((sector) => {
-      const warpsArray = sector.warps.toArray
-        ? sector.warps.toArray()
-        : Array.from(sector.warps);
+      const warpsArray = Array.from(sector.warps);
       const unique = new Set(warpsArray);
       if (unique.size !== warpsArray.length) {
         dupes.push(`Sector ${sector.sectorId}: has duplicate warps`);
@@ -182,11 +176,7 @@ describe("GalaxyGenerator", () => {
     const uninitialised: string[] = [];
     sectors.forEach((sector) => {
       if (sector.port) {
-        let hasCommodities = false;
-        sector.port.commodities.forEach(() => {
-          hasCommodities = true;
-        });
-        if (!hasCommodities) {
+        if (sector.port.commodities.size === 0) {
           uninitialised.push(
             `Port in sector ${sector.sectorId} has no commodity entries`,
           );
@@ -216,12 +206,8 @@ describe("GalaxyGenerator", () => {
       expect(other, `Missing sector ${key} in second galaxy`).toBeDefined();
       if (!other) return;
 
-      const warpsA = sector.warps.toArray
-        ? sector.warps.toArray()
-        : Array.from(sector.warps);
-      const warpsB = other.warps.toArray
-        ? other.warps.toArray()
-        : Array.from(other.warps);
+      const warpsA = Array.from(sector.warps);
+      const warpsB = Array.from(other.warps);
       expect(warpsA).toEqual(warpsB);
 
       expect(sector.x).toBe(other.x);
@@ -249,12 +235,8 @@ describe("GalaxyGenerator", () => {
         differences++;
         return;
       }
-      const warpsA = sectorA.warps.toArray
-        ? sectorA.warps.toArray()
-        : Array.from(sectorA.warps);
-      const warpsB = sectorB.warps.toArray
-        ? sectorB.warps.toArray()
-        : Array.from(sectorB.warps);
+      const warpsA = Array.from(sectorA.warps);
+      const warpsB = Array.from(sectorB.warps);
       if (JSON.stringify(warpsA) !== JSON.stringify(warpsB)) {
         differences++;
       }
